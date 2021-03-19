@@ -7,4 +7,4 @@ app = FastAPI()
 
 @app.get("/")
 async def index():
-    return "Hello, World!"
+    return "Goodbye, World!"
