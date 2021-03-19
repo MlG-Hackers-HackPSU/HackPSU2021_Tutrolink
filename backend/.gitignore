@@ -1,0 +1,6 @@
+# cached python
+__pycache__
+
+# editors
+.vscode
+.idea

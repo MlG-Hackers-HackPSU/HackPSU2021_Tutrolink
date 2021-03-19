@@ -1,0 +1,7 @@
+# module / caches
+node_modules
+__pycache__
+
+# editors
+.vscode
+.idea

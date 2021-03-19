@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 5000:8000
+    volumes:
+      - './backend:/app'
+    environment: 
+      - CHOKIDAR_USEPOLLING=true
+      - PYTHONUNBUFFERED=1
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - './frontend:/app'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
