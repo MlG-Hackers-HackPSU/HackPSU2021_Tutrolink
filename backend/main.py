@@ -72,7 +72,7 @@ async def createSession(sessionRequest : SessionRequest):
     tid = newID(5)
     newSession = Session(ID = id,Topics = sessionRequest.questions,SessionName = sessionRequest.room_title, Start = sessionRequest.start, End = sessionRequest.end,SID = sid, TID = tid)
     sessions.insert_one(dict(newSession))
-    return "200"
+    return newSession
 
 @app.get("/sessions")
 async def getSession():
