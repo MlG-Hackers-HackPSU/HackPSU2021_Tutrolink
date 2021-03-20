@@ -39,6 +39,7 @@ services:
   portal:
     container_name: portal
     image: mongo-express
+    restart: always
     ports:
       - 3300:8081
     environment: 
