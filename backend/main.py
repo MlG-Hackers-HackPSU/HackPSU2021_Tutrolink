@@ -115,3 +115,13 @@ def sessionExists(session_id):
     if sessions.find_one( { "ID": int(session_id) } ):
         return True
     return False
+
+#creates a link to invite a tutor 
+@app.get("/genTutorLink/{SessionID}")
+async def generateTutorLink(SessionID : str):
+    return f({frontend_host}/{SessionID}/inviteT)
+
+#creates a link to invite a student
+@app.get("/genStudentLink/{SessionID}")
+async def test(SessionID : str):
+    return f"{frontend_host}/{SessionID}/inviteS"
