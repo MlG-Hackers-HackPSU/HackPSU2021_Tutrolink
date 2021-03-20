@@ -5,3 +5,6 @@ __pycache__
 # editors
 .vscode
 .idea
+
+# secrets
+.env
