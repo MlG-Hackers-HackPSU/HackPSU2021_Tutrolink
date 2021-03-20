@@ -8,7 +8,7 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import (Optional,List)
 
-frontEnd_host = os.environ["FRONTEND_URI"]
+frontend_host = os.environ["FRONTEND_URI"]
 
 app = FastAPI()
 client = MongoClient(
@@ -108,9 +108,9 @@ def sessionExists(session_id):
 #creates a link to invite a tutor 
 @app.get("/genTutorLink/{SessionID}")
 async def generateTutorLink(SessionID : str):
-    return frontEnd_host + "/" + SessionID + "/inviteT"
+    return f({frontend_host}/{SessionID}/inviteT)
 
 #creates a link to invite a student
 @app.get("/genStudentLink/{SessionID}")
 async def test(SessionID : str):
-    return frontEnd_host + "/" + SessionID + "/inviteS"
+    return f"{frontend_host}/{SessionID}/inviteS"
