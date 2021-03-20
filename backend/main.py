@@ -35,10 +35,21 @@ class Tutor(BaseModel):
 
 class Session(BaseModel):
     ID: str
+    SessionName : str = "Save DaBaby in Minecraft"
     Topics: List[str]
-    Tutors: List[Tutor]
-    Queue: List[str]
-    ActiveMeetings: List[Meeting]
+    Tutors: List[Tutor] = []
+    Queue: List[str] = []
+    ActiveMeetings: List[Meeting] = []
+    Start: str
+    End: str
+    SID: str
+    TID: str
+
+class SessionRequest(BaseModel):
+    start : str
+    end : str
+    room_title : str
+    questions : List[str]
 
 sessions = client.tutrolink.sessions
 
@@ -48,17 +59,23 @@ async def index():
     return "No, don't search me!"
 
 
-def newID():
-    return secrets.token_urlsafe(16)
+def newID(n):
+    return secrets.token_urlsafe(n)
 
 
 @app.post("/sessions")
-async def createSession():
-    id = newID()
-    newSession = Session(ID = id,Topics = [],Tutors = [],Queue = [])
+async def createSession(sessionRequest : SessionRequest):
+    id = newID(16)
+    sid = newID(5)
+    tid = newID(5)
+    newSession = Session(ID = id,Topics = sessionRequest.questions,SessionName = sessionRequest.room_title, Start = sessionRequest.start, End = sessionRequest.end,SID = sid, TID = tid)
     sessions.insert_one(dict(newSession))
-    return id
-    return newSession.ID
+    return "200"
+
+@app.get("/sessions")
+async def getSession():
+    # TODO make this
+    pass
 
     
 @app.get("/student/{session_id}/join")
