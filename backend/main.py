@@ -4,6 +4,7 @@ import requests
 import json
 import os
 from pymongo import MongoClient
+from pydantic import BaseModel
 
 app = FastAPI()
 client = MongoClient(
