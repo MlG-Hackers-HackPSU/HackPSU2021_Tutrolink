@@ -14,6 +14,8 @@ client = MongoClient(
     username=os.environ["MONGO_USERNAME"], 
     password=os.environ["MONGO_PASSWORD"])
 
+frontend_host = os.environ["FRONTEND_URI"]
+
 #Here are the objects that will be sent back and forth
 
 class Review(BaseModel):
@@ -136,12 +138,15 @@ def sessionExists(session_id):
 #creates a link to invite a tutor 
 @app.get("/genTutorLink/{SessionID}")
 async def generateTutorLink(SessionID : str):
-    return f({frontend_host}/{SessionID}/inviteT)
+    tid = Session.parse_obj(sessions.find_one({"ID":SessionID})).TID
+    return f"{frontend_host}/{SessionID}/{tid}/tutor/join"
 
 #creates a link to invite a student
 @app.get("/genStudentLink/{SessionID}")
 async def test(SessionID : str):
-    return f"{frontend_host}/{SessionID}/inviteS"
+    sid = Session.parse_obj(sessions.find_one({"ID":SessionID}))
+    sid = sid.SID
+    return f"{frontend_host}/{SessionID}/{sid}/join"
 
 
 @app.get("/getCurrentMeetings/{SessionID}")
