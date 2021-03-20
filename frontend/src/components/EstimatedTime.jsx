@@ -1,10 +1,23 @@
+import { useState, useEffect } from 'react'
 import { Button } from 'react-bootstrap'
+import { animationInterval } from '../lib/animationInterval.js';
 import styles from './EstimatedTime.module.css'
 
 function EstimatedTime({ estimatedDuration, lastUpdated, updateThreshold }) {
 
-    const sinceLastUpdated = lastUpdated.diffNow("second")
-    const canUpdate = -sinceLastUpdated.get('seconds') > updateThreshold.get('second')
+    const [sinceLastUpdated, setSinceLastUpdated] = useState(lastUpdated.diffNow('second'))
+    const [canUpdate, setCanUpdate] = useState(false)
+
+    useEffect(() => {
+        const controller = new AbortController()
+        animationInterval(1000, controller.signal, _ => {
+            const diff = lastUpdated.diffNow("second")
+            setSinceLastUpdated(diff)
+            setCanUpdate(-diff.get('seconds') > updateThreshold.get('second'))
+        })
+        return () => controller.abort()
+    }, [sinceLastUpdated, lastUpdated, setCanUpdate, updateThreshold])
+
 
     const update = () => {
         console.log('update')

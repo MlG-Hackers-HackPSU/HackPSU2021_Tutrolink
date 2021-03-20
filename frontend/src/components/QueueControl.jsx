@@ -1,11 +1,7 @@
 import { Button } from 'react-bootstrap'
 import styles from './QueueControl.module.css'
 
-function QueueControl() {
-
-    const joinQueue = () => {
-        console.log('joinQueue')
-    }
+function QueueControl({ inQueue, openQuestionModal }) {
 
     const leaveQueue = () => {
         console.log('leaveQueue')
@@ -13,10 +9,10 @@ function QueueControl() {
 
     return (
         <section className={styles.content}>
-            <Button variant='success' onClick={joinQueue}>
+            <Button variant='success' onClick={openQuestionModal} disabled={inQueue}>
                 Join Queue
             </Button>
-            <Button variant='danger' onClick={leaveQueue}>
+            <Button variant='danger' onClick={leaveQueue} disabled={!inQueue} >
                 Leave Queue
             </Button>
         </section>
