@@ -8,6 +8,8 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import (Optional,List)
 
+frontEnd_host = os.environ["FRONTEND_URI"]
+
 app = FastAPI()
 client = MongoClient(
     host="database", 
@@ -102,3 +104,12 @@ def sessionExists(session_id):
     if sessions.find_one( { "ID": int(session_id) } ):
         return True
     return False
+
+#creates a link to press when inviting a tutor 
+@app.get("/genTutorLink/{SessionID}")
+async def generateTutorLink(SessionID : str):
+    return frontEnd_host + "/" + SessionID + "/inviteT"
+
+@app.get("/genStudentLink/{SessionID}")
+async def test():
+    pass
