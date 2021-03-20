@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 import json
 import os
-import random
+import secrets
 from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import (Optional,List)
@@ -15,11 +15,15 @@ client = MongoClient(
     password=os.environ["MONGO_PASSWORD"])
 
 
+class Tutor(BaseModel):
+    ID: str
+    Name: str = "Socrates"
+
 #Here are the objects that will be sent back and forth
 class Session(BaseModel):
-    ID: int
+    ID: str
     Topics: List[str]
-    Tutors: List[int]
+    Tutors: List[Tutor]
     Queue: List[int]
 
 counters = client.demo.counters
@@ -36,13 +40,22 @@ async def index():
 
 
 def newID():
-    return random.randint(10000,12000)
+    return secrets.token_urlsafe(16)
 
 @app.post("/rooms")
 async def createSession():
     id = newID()
     newSession = Session(ID = id,Topics = [],Tutors = [],Queue = [])
-    sessions.insert_one(json(newSession))
+    sessions.insert_one(dict(newSession))
     return newSession.ID
+
+#Logic for adding a tutor to the session
+@app.post("/Tutor/{token}/join")
+async def tutorJoin(token: str):
+    currentSession = Session.parse_obj(sessions.find_one({"ID":token}))
+    tID = secrets.token_urlsafe(4)
+    newTutor = Tutor(ID = tID).dict()
+    sessions.find_one_and_update({'ID': token}, { '$push': { 'Tutors': newTutor }})
+    return 
 
 
