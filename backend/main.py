@@ -105,11 +105,12 @@ def sessionExists(session_id):
         return True
     return False
 
-#creates a link to press when inviting a tutor 
+#creates a link to invite a tutor 
 @app.get("/genTutorLink/{SessionID}")
 async def generateTutorLink(SessionID : str):
     return frontEnd_host + "/" + SessionID + "/inviteT"
 
+#creates a link to invite a student
 @app.get("/genStudentLink/{SessionID}")
 async def test(SessionID : str):
     return frontEnd_host + "/" + SessionID + "/inviteS"
