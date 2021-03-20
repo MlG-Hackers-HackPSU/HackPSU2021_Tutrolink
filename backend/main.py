@@ -98,15 +98,6 @@ async def addStudent(request: StudentRequest):
 
     return 200
 
-@app.post("/student/next")
-async def nextStudent(request: {session_id: str}):
-
-    name = generateName()
-    student = Student(name=name, question=request.question).dict()
-    enqueueStudent(request.session_id, student)
-
-    return 200
-
 # Takes in a student in JSON format, and inserts into 
 # the beginning of the session queue denoted by session_id.
 def enqueueStudent(session_id, student):
