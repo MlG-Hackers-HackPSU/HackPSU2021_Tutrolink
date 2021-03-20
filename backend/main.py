@@ -8,26 +8,50 @@ from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import (Optional,List)
 
-frontend_host = os.environ["FRONTEND_URI"]
-
 app = FastAPI()
 client = MongoClient(
     host="database", 
     username=os.environ["MONGO_USERNAME"], 
     password=os.environ["MONGO_PASSWORD"])
 
+frontend_host = os.environ["FRONTEND_URI"]
 
-# Here are the objects that will be sent back and forth
+#Here are the objects that will be sent back and forth
+
+class Review(BaseModel):
+    Rating: int
+    Comment: str
+
+class Meeting(BaseModel):
+    Tutor: str
+    Student: str
+    Topic: str
+    StartTime: datetime
+
+
 class Tutor(BaseModel):
     ID: str
     Name: str = "Socrates"
+    Reviews : List[Review] = []
 
-#Here are the objects that will be sent back and forth
+
 class Session(BaseModel):
     ID: str
+    SessionName : str = "Save DaBaby in Minecraft"
     Topics: List[str]
-    Tutors: List[Tutor]
-    Queue: List[int]
+    Tutors: List[Tutor] = []
+    Queue: List[str] = []
+    ActiveMeetings: List[Meeting] = []
+    Start: str
+    End: str
+    SID: str
+    TID: str
+
+class SessionRequest(BaseModel):
+    start : str
+    end : str
+    room_title : str
+    questions : List[str]
 
 sessions = client.tutrolink.sessions
 
@@ -37,17 +61,23 @@ async def index():
     return "No, don't search me!"
 
 
-def newID():
-    return secrets.token_urlsafe(16)
+def newID(n):
+    return secrets.token_urlsafe(n)
 
 
-@app.post("/rooms")
-async def createSession():
-    id = newID()
-    newSession = Session(ID = id,Topics = [],Tutors = [],Queue = [])
+@app.post("/sessions")
+async def createSession(sessionRequest : SessionRequest):
+    id = newID(16)
+    sid = newID(5)
+    tid = newID(5)
+    newSession = Session(ID = id,Topics = sessionRequest.questions,SessionName = sessionRequest.room_title, Start = sessionRequest.start, End = sessionRequest.end,SID = sid, TID = tid)
     sessions.insert_one(dict(newSession))
-    return id
-    return newSession.ID
+    return "200"
+
+@app.get("/sessions")
+async def getSession():
+    # TODO make this
+    pass
 
     
 @app.get("/student/{session_id}/join")
@@ -97,7 +127,7 @@ async def tutorJoin(token: str):
     tID = secrets.token_urlsafe(4)
     newTutor = Tutor(ID = tID).dict()
     sessions.find_one_and_update({'ID': token}, { '$push': { 'Tutors': newTutor }})
-    return
+    return "200"
 
 
 def sessionExists(session_id):
@@ -108,9 +138,19 @@ def sessionExists(session_id):
 #creates a link to invite a tutor 
 @app.get("/genTutorLink/{SessionID}")
 async def generateTutorLink(SessionID : str):
-    return f({frontend_host}/{SessionID}/inviteT)
+    tid = Session.parse_obj(sessions.find_one({"ID":SessionID})).TID
+    return f"{frontend_host}/{SessionID}/{tid}/tutor/join"
 
 #creates a link to invite a student
 @app.get("/genStudentLink/{SessionID}")
 async def test(SessionID : str):
-    return f"{frontend_host}/{SessionID}/inviteS"
+    sid = Session.parse_obj(sessions.find_one({"ID":SessionID}))
+    sid = sid.SID
+    return f"{frontend_host}/{SessionID}/{sid}/join"
+
+
+@app.get("/getCurrentMeetings/{SessionID}")
+async def getCurrentMeetings(SessionID : str):
+    currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
+    currentMeetings = currentSession.ActiveMeetings
+    return dict(currentMeetings)
