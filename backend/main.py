@@ -7,6 +7,8 @@ import secrets
 from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import (Optional,List)
+from random import choice
+from names import generateName
 
 app = FastAPI()
 client = MongoClient(
@@ -28,6 +30,10 @@ class Meeting(BaseModel):
     Topic: str
     StartTime: datetime
 
+class Student(BaseModel):
+    name: str
+    question: str
+
 
 class Tutor(BaseModel):
     ID: str
@@ -40,7 +46,7 @@ class Session(BaseModel):
     SessionName : str = "Save DaBaby in Minecraft"
     Topics: List[str]
     Tutors: List[Tutor] = []
-    Queue: List[str] = []
+    Queue: List[Student] = []
     ActiveMeetings: List[Meeting] = []
     Start: str
     End: str
@@ -48,6 +54,15 @@ class Session(BaseModel):
     TID: str
     tutor_link: Optional[str]
     student_link: Optional[str]
+
+class TutorRequest(BaseModel):
+    name: str
+    contact_link: str
+
+class StudentRequest(BaseModel):
+    session_id: str
+    sid: str
+    question: str
 
 class SessionRequest(BaseModel):
     start : str
@@ -57,15 +72,8 @@ class SessionRequest(BaseModel):
 
 sessions = client.tutrolink.sessions
 
-# lol forever counter
-@app.get("/")
-async def index():
-    return "No, don't search me!"
-
-
 def newID(n):
     return secrets.token_urlsafe(n)
-
 
 @app.post("/sessions")
 async def createSession(sessionRequest : SessionRequest):
@@ -74,7 +82,7 @@ async def createSession(sessionRequest : SessionRequest):
     tid = newID(5)
     newSession = Session(ID = id,Topics = sessionRequest.questions,SessionName = sessionRequest.room_title, Start = sessionRequest.start, End = sessionRequest.end,SID = sid, TID = tid)
     sessions.insert_one(dict(newSession))
-    return "200"
+    return newSession
 
 @app.get("/sessions/{SessionID}")
 async def getSession(SessionID : str):
@@ -86,31 +94,25 @@ async def getSession(SessionID : str):
     send_back = Session.parse_obj(currentSession)
     return send_back
 
-    
-@app.get("/student/{session_id}/join")
-def studentWantsToJoin(session_id):
-    if not sessionExists(session_id):
-        return "Error: invalid session_id"
-    topics = getTopics(session_id)
+# incoming student, give them session information such as
+# queue information, questions stuff like that.
+@app.post("/student/join")
+async def addStudent(request: StudentRequest):
 
-    # TODO redirect them to fourm with the topics
+    name = generateName()
+    student = Student(name=name, question=request.question).dict()
+    enqueueStudent(request.session_id, student)
 
-    return str(topics)
-
-@app.post("/student/{session_id}/join")
-def addStudent(student):
-    # TODO - Add student to DB.
-    return "No Student :("
-
+    return 200
 
 # Takes in a student in JSON format, and inserts into 
 # the beginning of the session queue denoted by session_id.
 def enqueueStudent(session_id, student):
-    sessions.find_one_and_update({"ID" : int(session_id)}, {"$push": {"Queue": int(student)}})
+    sessions.find_one_and_update({"ID" : session_id}, {"$push": {"Queue": student}})
 
 # Dequeues a student from the session_id queue.
 def dequeueStudent(session_id):
-    my_session = Session.parse_obj(sessions.find_one({"ID":int(session_id)}))
+    my_session = Session.parse_obj(sessions.find_one({"ID":session_id}))
 
     queue = my_session.Queue
 
@@ -119,7 +121,7 @@ def dequeueStudent(session_id):
     else:
         popped = queue.pop(0)
 
-    sessions.find_one_and_update({"ID": int(session_id)}, {"$pop": {"Queue": -1}})
+    sessions.find_one_and_update({"ID": session_id}, {"$pop": {"Queue": -1}})
     return popped
 
 def getTopics(session_id):
@@ -138,7 +140,7 @@ async def tutorJoin(token: str):
 
 
 def sessionExists(session_id):
-    if sessions.find_one( { "ID": int(session_id) } ):
+    if sessions.find_one( { "ID": session_id } ):
         return True
     return False
 
@@ -159,3 +161,4 @@ async def getCurrentMeetings(SessionID : str):
     currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
     currentMeetings = currentSession.ActiveMeetings
     return dict(currentMeetings)
+
