@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Response
+from fastapi import FastAPI
 from datetime import datetime
 import requests
 import json
@@ -56,6 +56,6 @@ async def tutorJoin(token: str):
     tID = secrets.token_urlsafe(4)
     newTutor = Tutor(ID = tID).dict()
     sessions.find_one_and_update({'ID': token}, { '$push': { 'Tutors': newTutor }})
-    return Response(url = "https://www.google/com")
+    return 
 
 
