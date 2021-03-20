@@ -12,6 +12,8 @@ services:
     environment: 
       - CHOKIDAR_USEPOLLING=true
       - PYTHONUNBUFFERED=1
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
   frontend:
     container_name: frontend
     build:
