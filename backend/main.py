@@ -46,6 +46,8 @@ class Session(BaseModel):
     End: str
     SID: str
     TID: str
+    tutor_link: Optional[str]
+    student_link: Optional[str]
 
 class SessionRequest(BaseModel):
     start : str
@@ -74,10 +76,15 @@ async def createSession(sessionRequest : SessionRequest):
     sessions.insert_one(dict(newSession))
     return "200"
 
-@app.get("/sessions")
-async def getSession():
-    # TODO make this
-    pass
+@app.get("/sessions/{SessionID}")
+async def getSession(SessionID : str):
+    currentSession = sessions.find_one({"ID":SessionID})
+    studentLink = generateStudentLink(SessionID)
+    tutorLink = generateTutorLink(SessionID)
+    currentSession['student_link'] = studentLink
+    currentSession['tutor_link'] = tutorLink
+    send_back = Session.parse_obj(currentSession)
+    return send_back
 
     
 @app.get("/student/{session_id}/join")
@@ -136,17 +143,15 @@ def sessionExists(session_id):
     return False
 
 #creates a link to invite a tutor 
-@app.get("/genTutorLink/{SessionID}")
-async def generateTutorLink(SessionID : str):
+def generateTutorLink(SessionID : str):
     tid = Session.parse_obj(sessions.find_one({"ID":SessionID})).TID
     return f"{frontend_host}/{SessionID}/{tid}/tutor/join"
-
-#creates a link to invite a student
-@app.get("/genStudentLink/{SessionID}")
-async def test(SessionID : str):
+    
+#creates a link to invite a tutor 
+def generateStudentLink(SessionID):
     sid = Session.parse_obj(sessions.find_one({"ID":SessionID}))
     sid = sid.SID
-    return f"{frontend_host}/{SessionID}/{sid}/join"
+    return f"{frontend_host}/{SessionID}/{sid}/student/join"
 
 
 @app.get("/getCurrentMeetings/{SessionID}")
