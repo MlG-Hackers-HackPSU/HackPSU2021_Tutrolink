@@ -8,7 +8,7 @@ function Home() {
         <Container fluid>
             <Row>
                 <main className={styles.wrapper}>
-                    <Col lg={{ span: 7 }}>
+                    <Col lg={{ span: 6 }}>
                         <QueueView />
                     </Col>
                 </main>
