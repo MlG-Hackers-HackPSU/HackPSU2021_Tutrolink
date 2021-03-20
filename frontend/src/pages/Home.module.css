@@ -1,0 +1,23 @@
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+
+    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)), url("../images/homebg.jpg");
+    background-position: 50%;
+
+    display: flex;
+    justify-content: center;
+}
+
+.content {
+    margin-top: 5vh;
+    min-height: 95vh;
+
+    width: 65vw;
+    max-width: 1000px;
+    min-width: 700px;
+
+    background-color: rgba(240, 240, 240, 0.95);
+    border-radius: 2%;
+    box-shadow: 0.2rem 0.2rem rgba(90, 90, 90, 0.9);
+}

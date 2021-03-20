@@ -1,0 +1,11 @@
+.content {
+    height: 95vh;
+    margin-top: 5vh;
+
+    background-color: rgba(240, 240, 240, 0.98);
+    border-radius: 2%;
+}
+
+.container {
+    padding: 2rem;
+}
