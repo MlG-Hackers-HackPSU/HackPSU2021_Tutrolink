@@ -111,5 +111,5 @@ async def generateTutorLink(SessionID : str):
     return frontEnd_host + "/" + SessionID + "/inviteT"
 
 @app.get("/genStudentLink/{SessionID}")
-async def test():
-    pass
+async def test(SessionID : str):
+    return frontEnd_host + "/" + SessionID + "/inviteS"
