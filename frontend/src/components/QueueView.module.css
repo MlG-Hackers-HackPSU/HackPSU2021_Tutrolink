@@ -4,6 +4,8 @@
 
     background-color: rgba(240, 240, 240, 0.98);
     border-radius: 2%;
+
+    overflow-y: scroll;
 }
 
 .headerrow {
@@ -16,4 +18,12 @@
 
 .listview {
     margin-top: 2vh;
+}
+
+.spinner {
+    width: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
 }
