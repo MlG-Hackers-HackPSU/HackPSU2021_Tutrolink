@@ -8,3 +8,6 @@ __pycache__
 
 # secrets
 .env
+
+# database
+mongo/db
