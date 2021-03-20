@@ -1,0 +1,23 @@
+.footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    margin-right: 2%;
+    margin-bottom: 1%;
+}
+
+.icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.hackpsu {
+    color: white;
+}
+
+.project {
+    display: flex;
+    color: white;
+    line-height: 1.2rem;
+}
