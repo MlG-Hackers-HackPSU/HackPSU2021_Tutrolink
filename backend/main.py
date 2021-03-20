@@ -37,7 +37,7 @@ class Session(BaseModel):
     ID: str
     Topics: List[str]
     Tutors: List[Tutor]
-    Queue: List[int]
+    Queue: List[str]
     ActiveMeetings: List[Meeting]
 
 sessions = client.tutrolink.sessions
@@ -52,7 +52,7 @@ def newID():
     return secrets.token_urlsafe(16)
 
 
-@app.post("/rooms")
+@app.post("/sessions")
 async def createSession():
     id = newID()
     newSession = Session(ID = id,Topics = [],Tutors = [],Queue = [])
@@ -108,7 +108,7 @@ async def tutorJoin(token: str):
     tID = secrets.token_urlsafe(4)
     newTutor = Tutor(ID = tID).dict()
     sessions.find_one_and_update({'ID': token}, { '$push': { 'Tutors': newTutor }})
-    return
+    return "200"
 
 
 def sessionExists(session_id):
@@ -125,3 +125,10 @@ async def generateTutorLink(SessionID : str):
 @app.get("/genStudentLink/{SessionID}")
 async def test(SessionID : str):
     return f"{frontend_host}/{SessionID}/inviteS"
+
+
+@app.get("/getCurrentMeetings/{SessionID}")
+async def getCurrentMeetings(SessionID : str):
+    currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
+    currentMeetings = currentSession.ActiveMeetings
+    return dict(currentMeetings)
