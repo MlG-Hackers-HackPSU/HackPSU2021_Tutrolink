@@ -1,12 +1,19 @@
 // Home page of the desktop browser
 import styles from './Home.module.css'
+import { Container, Col, Row } from 'react-bootstrap'
+import QueueView from '../components/QueueView.jsx'
 
 function Home() {
     return (
-        <main class={styles.wrapper}>
-            <section class={styles.content}>
-            </section>
-        </main>
+        <Container fluid>
+            <Row>
+                <main className={styles.wrapper}>
+                    <Col lg={{ span: 6 }}>
+                        <QueueView />
+                    </Col>
+                </main>
+            </Row>
+        </Container>
     )
 }
 
