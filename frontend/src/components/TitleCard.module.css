@@ -1,0 +1,10 @@
+.title {
+    text-align: center;
+}
+
+.subheader {
+    display: flex;
+    justify-content: space-around;
+
+    font-weight: 500;
+}
