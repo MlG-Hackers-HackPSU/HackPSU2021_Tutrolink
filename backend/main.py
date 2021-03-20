@@ -58,8 +58,8 @@ class TutorRequest(BaseModel):
     contact_link: str
 
 class StudentRequest(BaseModel):
-    session_id: int
-    sid: int
+    session_id: str
+    sid: str
     question: str
 
 class SessionRequest(BaseModel):
@@ -70,15 +70,8 @@ class SessionRequest(BaseModel):
 
 sessions = client.tutrolink.sessions
 
-# lol forever counter
-@app.get("/")
-async def index():
-    return "No, don't search me!"
-
-
 def newID(n):
     return secrets.token_urlsafe(n)
-
 
 @app.post("/sessions")
 async def createSession(sessionRequest : SessionRequest):
@@ -100,19 +93,28 @@ async def getSession():
 async def addStudent(request: StudentRequest):
 
     name = generateName()
-    student = Student(name=name, question=request.question)
+    student = Student(name=name, question=request.question).dict()
     enqueueStudent(request.session_id, student)
-    
+
+    return 200
+
+@app.post("/student/next")
+async def nextStudent(request: {session_id: str}):
+
+    name = generateName()
+    student = Student(name=name, question=request.question).dict()
+    enqueueStudent(request.session_id, student)
+
     return 200
 
 # Takes in a student in JSON format, and inserts into 
 # the beginning of the session queue denoted by session_id.
 def enqueueStudent(session_id, student):
-    sessions.find_one_and_update({"ID" : int(session_id)}, {"$push": {"Queue": student}})
+    sessions.find_one_and_update({"ID" : session_id}, {"$push": {"Queue": student}})
 
 # Dequeues a student from the session_id queue.
 def dequeueStudent(session_id):
-    my_session = Session.parse_obj(sessions.find_one({"ID":int(session_id)}))
+    my_session = Session.parse_obj(sessions.find_one({"ID":session_id}))
 
     queue = my_session.Queue
 
@@ -121,7 +123,7 @@ def dequeueStudent(session_id):
     else:
         popped = queue.pop(0)
 
-    sessions.find_one_and_update({"ID": int(session_id)}, {"$pop": {"Queue": -1}})
+    sessions.find_one_and_update({"ID": session_id}, {"$pop": {"Queue": -1}})
     return popped
 
 def getTopics(session_id):
@@ -140,7 +142,7 @@ async def tutorJoin(token: str):
 
 
 def sessionExists(session_id):
-    if sessions.find_one( { "ID": int(session_id) } ):
+    if sessions.find_one( { "ID": session_id } ):
         return True
     return False
 
