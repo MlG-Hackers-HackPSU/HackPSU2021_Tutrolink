@@ -16,13 +16,19 @@ client = MongoClient(
     username=os.environ["MONGO_USERNAME"], 
     password=os.environ["MONGO_PASSWORD"])
 
+#Here are the objects that will be sent back and forth
 
-# Here are the objects that will be sent back and forth
+class Review(BaseModel):
+    Rating: int
+    Comment: str
+
+
 class Tutor(BaseModel):
     ID: str
     Name: str = "Socrates"
+    Reviews : List[Review] = []
 
-#Here are the objects that will be sent back and forth
+
 class Session(BaseModel):
     ID: str
     Topics: List[str]
