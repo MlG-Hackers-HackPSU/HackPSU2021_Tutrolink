@@ -7,6 +7,8 @@ import secrets
 from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import (Optional,List)
+from random import choice
+from names import generateName
 
 app = FastAPI()
 client = MongoClient(
@@ -28,6 +30,10 @@ class Meeting(BaseModel):
     Topic: str
     StartTime: datetime
 
+class Student(BaseModel):
+    name: str
+    question: str
+
 
 class Tutor(BaseModel):
     ID: str
@@ -40,12 +46,21 @@ class Session(BaseModel):
     SessionName : str = "Save DaBaby in Minecraft"
     Topics: List[str]
     Tutors: List[Tutor] = []
-    Queue: List[str] = []
+    Queue: List[Student] = []
     ActiveMeetings: List[Meeting] = []
     Start: str
     End: str
     SID: str
     TID: str
+
+class TutorRequest(BaseModel):
+    name: str
+    contact_link: str
+
+class StudentRequest(BaseModel):
+    session_id: int
+    sid: int
+    question: str
 
 class SessionRequest(BaseModel):
     start : str
@@ -79,27 +94,21 @@ async def getSession():
     # TODO make this
     pass
 
+# incoming student, give them session information such as
+# queue information, questions stuff like that.
+@app.post("/student/join")
+async def addStudent(request: StudentRequest):
+
+    name = generateName()
+    student = Student(name=name, question=request.question)
+    enqueueStudent(request.session_id, student)
     
-@app.get("/student/{session_id}/join")
-def studentWantsToJoin(session_id):
-    if not sessionExists(session_id):
-        return "Error: invalid session_id"
-    topics = getTopics(session_id)
-
-    # TODO redirect them to fourm with the topics
-
-    return str(topics)
-
-@app.post("/student/{session_id}/join")
-def addStudent(student):
-    # TODO - Add student to DB.
-    return "No Student :("
-
+    return 200
 
 # Takes in a student in JSON format, and inserts into 
 # the beginning of the session queue denoted by session_id.
 def enqueueStudent(session_id, student):
-    sessions.find_one_and_update({"ID" : int(session_id)}, {"$push": {"Queue": int(student)}})
+    sessions.find_one_and_update({"ID" : int(session_id)}, {"$push": {"Queue": student}})
 
 # Dequeues a student from the session_id queue.
 def dequeueStudent(session_id):
@@ -154,3 +163,4 @@ async def getCurrentMeetings(SessionID : str):
     currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
     currentMeetings = currentSession.ActiveMeetings
     return dict(currentMeetings)
+
