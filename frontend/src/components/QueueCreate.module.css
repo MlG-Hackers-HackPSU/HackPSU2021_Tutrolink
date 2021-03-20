@@ -1,0 +1,45 @@
+.content {
+    height: 95vh;
+    margin-top: 5vh;
+
+    background-color: rgba(240, 240, 240, 0.98);
+    border-radius: 2%;
+
+    overflow-y: scroll;
+}
+
+.container {
+    padding: 2rem;
+}
+
+.jumbo {
+    background-color: rgb(220, 220, 220);
+}
+
+.sample {
+    width: 95%;
+    border: 1px solid rgb(90, 90, 90);
+    border-radius: 2%;
+}
+
+.pitch {
+    margin-top: 1vh;
+}
+
+.titlerow {
+    align-items: center;
+}
+
+.buttons {
+    justify-content: space-around;
+}
+
+.formrow {
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.links {
+    display: flex;
+    justify-content: space-between;
+}
