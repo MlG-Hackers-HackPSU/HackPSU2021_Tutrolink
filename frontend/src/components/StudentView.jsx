@@ -2,7 +2,7 @@ import client from '../client/client.js'
 import StudentCard from './StudentCard.jsx'
 import styles from './StudentView.module.css'
 
-function StudentView({ queue, me, showMeet, session, setQueue, setActiveMeeting }) {
+function StudentView({ queue, me, showMeet, session, setQueue, cookies }) {
     if (!queue?.length) {
         return (
             <section className={styles.nostudents}>
@@ -27,6 +27,7 @@ function StudentView({ queue, me, showMeet, session, setQueue, setActiveMeeting 
                 me={me}
                 showMeet={showMeet}
                 meet={meet}
+                cookies={cookies}
             />))
 }
 
