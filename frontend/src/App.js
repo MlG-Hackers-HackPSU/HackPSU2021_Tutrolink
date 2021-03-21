@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 import { CookiesProvider } from 'react-cookie';
 import Home from "./pages/Home.jsx";
+import Admin from "./pages/Admin.jsx"
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
@@ -12,6 +13,9 @@ function App() {
     <CookiesProvider>
       <Router>
         <Switch>
+        <Route path="/admin">
+            <Admin />
+          </Route>
           <Route path="/">
             <Home />
           </Route>
