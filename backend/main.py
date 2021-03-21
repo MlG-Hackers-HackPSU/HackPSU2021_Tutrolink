@@ -38,17 +38,26 @@ class Meeting(BaseModel):
     Tutor: str
     Student: str
     Topic: str
-    StartTime: datetime
+    StartTime: str
+    Active: bool = False
+    EndTime: str
 
 class Student(BaseModel):
     name: str
     question: str
+    student_id: str
+    joined_queue_time: str
+    active: bool = True
+    left_queue_time: Optional[str] 
 
 
 class Tutor(BaseModel):
     ID: str
     Name: str = "Socrates"
     Reviews : List[Review] = []
+    StartTime: str
+    Active: bool = True
+    EndTime: str
 
 
 class Session(BaseModel):
@@ -57,7 +66,7 @@ class Session(BaseModel):
     Topics: List[str]
     Tutors: List[Tutor] = []
     Queue: List[Student] = []
-    ActiveMeetings: List[Meeting] = []
+    Meetings: List[Meeting] = []
     Start: str
     End: str
     SID: str
@@ -101,6 +110,9 @@ async def createSession(sessionRequest : SessionRequest):
 
 @app.get("/sessions/{SessionID}")
 async def getSession(SessionID : str):
+    return getSessionFromId(SessionID)
+
+def getSessionFromId(SessionID :str):
     return Session.parse_obj(sessions.find_one({"ID":SessionID}))
 
 # incoming student, give them session information such as
@@ -109,10 +121,37 @@ async def getSession(SessionID : str):
 async def addStudent(request: StudentRequest):
 
     name = generateName()
-    student = Student(name=name, question=request.question).dict()
+    student = Student(
+        name=name, question=request.question, student_id=secrets.token_urlsafe(16),
+        joined_queue_time=datetime.now().isoformat()
+    ).dict()
     enqueueStudent(request.session_id, student)
 
-    return 200
+    return getSessionFromId(request.session_id)
+
+class StudentLeaveRequest(BaseModel):
+    session_id: str
+    student_id: str
+
+# outgoing student, leaves all meeting and queue
+@app.post("/student/leave")
+async def deactivateStudent(request: StudentLeaveRequest):
+    left_timestamp = datetime.now().isoformat()
+    session = sessions.find_one({ 'ID': request.session_id })
+    
+    # deactivate student
+    for i in range(len(session['Queue'])):
+        if request.student_id == session['Queue'][i]['student_id']:
+            session['Queue'][i]['active'] = False
+            session['Queue'][i]['left_queue_time'] = left_timestamp
+    for i in range(len(session['Meetings'])):
+        if request.student_id == session['Meetings'][i]['Student']['student_id']:
+            session['Meetings'][i]['Active'] = False
+            session['Meetings'][i]['EndTime'] = left_timestamp
+    # commit changes
+    sessions.find_one_and_replace({ 'ID': request.session_id }, session)
+    # return updated session
+    return getSessionFromId(request.session_id)
 
 # Takes in a student in JSON format, and inserts into 
 # the beginning of the session queue denoted by session_id.
@@ -165,6 +204,6 @@ def generateStudentLink(sid, stid):
 @app.get("/getCurrentMeetings/{SessionID}")
 async def getCurrentMeetings(SessionID : str):
     currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
-    currentMeetings = currentSession.ActiveMeetings
+    currentMeetings = currentSession.Meetings
     return dict(currentMeetings)
 

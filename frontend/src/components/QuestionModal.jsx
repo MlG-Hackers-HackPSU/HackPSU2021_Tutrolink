@@ -1,13 +1,21 @@
 import { useState } from 'react'
 import { Button, Modal, Form } from 'react-bootstrap'
+import client from '../client/client.js'
 
-function QuestionModal({ modalOpen, closeModal, questions }) {
+function QuestionModal({ modalOpen, closeModal, questions, 
+    setInQueue, setQueue, sessionId, studentId, setMe, setCookie }) {
 
     const [question, setQuestion] = useState(questions[0])
-    const [name, setName] = useState(null)
-    console.log({question,name})
+
     const ask = () => {
-        console.log(`Asking question ${question}!`)
+        client.joinRoom(sessionId, studentId, question).then(queue => {
+            setQueue(queue)
+            setInQueue(true)
+            // we're the last student in the queue
+            const me = queue.Queue[queue.Queue.length - 1]
+            setMe(me) 
+            setCookie('id', me.student_id)
+        })
         closeModal()
     }
 
