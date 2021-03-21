@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap'
 import { animationInterval } from '../lib/animationInterval.js';
 import styles from './EstimatedTime.module.css'
 
-function EstimatedTime({ estimatedDuration, lastUpdated, updateThreshold }) {
+function EstimatedTime({ estimatedDuration, lastUpdated, updateThreshold, update }) {
 
     const [sinceLastUpdated, setSinceLastUpdated] = useState(lastUpdated.diffNow('second'))
     const [canUpdate, setCanUpdate] = useState(false)
@@ -17,11 +17,6 @@ function EstimatedTime({ estimatedDuration, lastUpdated, updateThreshold }) {
         })
         return () => controller.abort()
     }, [sinceLastUpdated, lastUpdated, setCanUpdate, updateThreshold])
-
-
-    const update = () => {
-        console.log('update')
-    }
 
     return (
         <main className={styles.content}>
