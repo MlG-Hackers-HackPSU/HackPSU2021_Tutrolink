@@ -14,10 +14,11 @@ function AnswerModal({ modalOpen, closeModal,
             console.log(queue)
             setQueue(queue)
             setInQueue(true)
-            // we're the last student in the queue
-            //const me = queue.Queue[queue.Queue.length - 1]
-            //setMe(me) 
-            //setCookie('id', me.student_id)
+            //we're the last student in the queue
+            const me = queue.Tutors[queue.Tutors.length - 1]
+            setMe(me) 
+            setCookie('id', me.ID)
+            console.log(me)
         })
         closeModal()
     }

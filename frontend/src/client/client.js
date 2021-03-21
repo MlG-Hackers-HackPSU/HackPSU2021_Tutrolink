@@ -54,6 +54,13 @@ class Client {
         }).then(response => response?.data)
     }
 
+    deactivateTa(sessionId, tutorId) {
+        return axios.post(`${this.uri}/tutor/leave`, {
+            'session_id': sessionId,
+            'tutor_id': tutorId
+        }).then(response => response?.data)
+    }
+
     getQueueStatus() {
         // TODO
     }
