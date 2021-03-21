@@ -12,6 +12,7 @@ import StudentView from './StudentView.jsx'
 import QuestionModal from './QuestionModal.jsx'
 import AnswerModal from './AnswerModal.jsx'
 import ModifyModal from './ModifyModal.jsx'
+import FeedbackModal from './FeedbackModal.jsx'
 import client from '../client/client.js'
 import { animationInterval } from '../lib/animationInterval.js'
 
@@ -23,12 +24,15 @@ function QueueView({ student, session, id }) {
     const [questionModalOpen, setQuestionModalOpen] = useState(false)
     const [answerModalOpen, setAnswerModalOpen] = useState(false)
     const [modifyModalOpen, setModifyModalOpen] = useState(false)
+    const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
     const openQuestionModal = () => setQuestionModalOpen(true)
     const openAnswerModal = () => setAnswerModalOpen(true)
     const openModifyModal = () => setModifyModalOpen(true)
+    const openFeedbackModal = () => setFeedbackModalOpen(true)
     const closeQuestionModal = () => setQuestionModalOpen(false)
     const closeAnswerModal = () => setAnswerModalOpen(false)
     const closeModifyModal = () => setModifyModalOpen(false)
+    const closeFeedbackModal = () => setFeedbackModalOpen(false)
     const [activeMeeting, setActiveMeeting] = useState(null)
     const recieveInvite = () => setActiveMeeting(true)
     const endMeeting = () => setActiveMeeting(false)
@@ -36,6 +40,8 @@ function QueueView({ student, session, id }) {
     const [queue, setQueue] = useState(null)
     const [me, setMe] = useState(null)
     const [cookies, setCookie] = useCookies(['id', 'student'])
+    const [rating, setRating] = useState(null)
+    const [note, setNote] = useState(null)
 
     const updateThreshold = Duration.fromObject({ seconds: 10 })
 
@@ -43,14 +49,7 @@ function QueueView({ student, session, id }) {
         client.getRoom(session).then(queue => {
             setQueue(queue)
             setIsLoading(false)
-        })
-        if(cookies.id){
-            client.checkMeeting(session,cookies.id).then(invited => {
-            console.log(invited)
-            setActiveMeeting(invited)
-            })
-        }
-            
+        })   
     }
 
     useEffect(() => {
@@ -104,6 +103,7 @@ function QueueView({ student, session, id }) {
                             openQuestionModal={openQuestionModal}
                             openAnswerModal={openAnswerModal}
                             openModifyModal={openModifyModal}
+                            openFeedbackModal={openFeedbackModal}
                             me={me}
                             session={session}
                             setQueue={setQueue}
@@ -158,6 +158,21 @@ function QueueView({ student, session, id }) {
                 setInQueue={setInQueue}
                 setQueue={setQueue}
                 sessionId={session}
+                auth={id}
+                setMe={setMe}
+                setCookie={setCookie}
+                cookies = {cookies}
+            />
+            <FeedbackModal
+                modalOpen={feedbackModalOpen}
+                closeModal={closeFeedbackModal}
+                questions={queue.Topics}
+                setInQueue={setInQueue}
+                setQueue={setQueue}
+                sessionId={session}
+                rating={rating}
+                setRating={setRating}
+                student_id={id}
                 auth={id}
                 setMe={setMe}
                 setCookie={setCookie}
