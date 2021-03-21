@@ -1,0 +1,48 @@
+version: '3.9'
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - 3000:80
+    environment: 
+      - REACT_APP_BACKEND_URI=${BACKEND_URI}
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - 5000:8000
+    environment: 
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - FRONTEND_URI=${FRONTEND_URI}
+  database:
+    container_name: database
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - './mongo/db:/data/db'
+    environment: 
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+  portal:
+    container_name: portal
+    image: mongo-express
+    restart: always
+    ports:
+      - 3300:8081
+    environment: 
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_WEB_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_WEB_PASSWORD}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: 'database'
+    depends_on: 
+      - database

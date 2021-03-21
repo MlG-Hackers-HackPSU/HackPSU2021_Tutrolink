@@ -13,6 +13,8 @@ from random import choice
 from names import generateName
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
+from dotenv import load_dotenv
+load_dotenv()
 
 ########################## INITALIZATION ##########################
 

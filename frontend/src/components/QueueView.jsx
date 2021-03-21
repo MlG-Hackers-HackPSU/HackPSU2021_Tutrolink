@@ -161,8 +161,8 @@ function QueueView({ student, session, id }) {
                             showMeet={!student && !activeMeeting}
                             session={session}
                             setQueue={setQueue}
-                            setActiveMeeting={setActiveMeeting}
                             student={student}
+                            cookie={cookies}
                         />
                     </Col>
                 </Row>

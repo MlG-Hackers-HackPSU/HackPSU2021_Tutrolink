@@ -4,3 +4,4 @@ requests
 pymongo
 pydantic
 typing
+python-dotenv

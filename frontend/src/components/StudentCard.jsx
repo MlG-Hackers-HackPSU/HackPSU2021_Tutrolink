@@ -2,7 +2,7 @@
 import { Button } from 'react-bootstrap'
 import styles from './StudentCard.module.css'
 
-function StudentCard({ id, name, pos, me, question, showMeet, meet }) {
+function StudentCard({ id, name, pos, me, question, showMeet, meet, cookies }) {
     const ticker = id === me?.student_id ? "⭐" : `${pos}`
     return (
         <section className={`${styles.contain} ${pos % 2 ? styles.container : styles.wcontainer}`}>
@@ -12,7 +12,7 @@ function StudentCard({ id, name, pos, me, question, showMeet, meet }) {
             <span className={styles.question}>
                 {question}
             </span>
-            { showMeet && <Button variant="primary" onClick={() => meet(id, me?.ID)}>Meet</Button> }
+            { showMeet && <Button variant="primary" onClick={() => meet(id, me?.ID || cookies.tutor_id)}>Meet</Button> }
         </section>
     )
 }
