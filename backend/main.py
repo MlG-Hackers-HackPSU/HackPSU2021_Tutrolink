@@ -1,3 +1,5 @@
+############################# IMPORTS #############################
+
 from fastapi import FastAPI
 from datetime import datetime
 import requests
@@ -11,6 +13,8 @@ from random import choice
 from names import generateName
 from fastapi.middleware.cors import CORSMiddleware
 from models import *
+
+########################## INITALIZATION ##########################
 
 frontend_host = os.environ["FRONTEND_URI"]
 origins = [ frontend_host ]
@@ -29,17 +33,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# Connect to Database
 sessions = client.tutrolink.sessions
 
-def newID(n):
-    return secrets.token_urlsafe(n)
+######################### GETS AND POSTS #########################
 
+# creates a session upon recieving a session request
 @app.post("/sessions")
 async def createSession(sessionRequest : SessionRequest):
-    id = newID(16)
-    sid = newID(5)
-    tid = newID(5)
+    id = secrets.token_urlsafe(16)
+    sid = secrets.token_urlsafe(5)
+    tid = secrets.token_urlsafe(5)
     newSession = Session(
         ID = id, Topics = sessionRequest.questions, SessionName = sessionRequest.room_title,
         Start = sessionRequest.start, End = sessionRequest.end, 
@@ -49,15 +53,12 @@ async def createSession(sessionRequest : SessionRequest):
     sessions.insert_one(dict(newSession))
     return newSession
 
+# returns the session information
 @app.get("/sessions/{SessionID}")
 async def getSession(SessionID : str):
     return getSessionFromId(SessionID)
 
-def getSessionFromId(SessionID :str):
-    return Session.parse_obj(sessions.find_one({"ID":SessionID}))
-
-# incoming student, give them session information such as
-# queue information, questions stuff like that.
+# create student and add them to the queue.
 @app.post("/student/join")
 async def addStudent(request: StudentRequest):
 
@@ -69,8 +70,6 @@ async def addStudent(request: StudentRequest):
     enqueueStudent(request.session_id, student)
 
     return getSessionFromId(request.session_id)
-
-
 
 # outgoing student, leaves all meeting and queue
 @app.post("/student/leave")
@@ -92,30 +91,6 @@ async def deactivateStudent(request: StudentLeaveRequest):
     # return updated session
     return getSessionFromId(request.session_id)
 
-# Takes in a student in JSON format, and inserts into 
-# the beginning of the session queue denoted by session_id.
-def enqueueStudent(session_id, student):
-    sessions.find_one_and_update({"ID" : session_id}, {"$push": {"Queue": student}})
-
-# Dequeues a student from the session_id queue.
-def dequeueStudent(session_id):
-    my_session = Session.parse_obj(sessions.find_one({"ID":session_id}))
-
-    queue = my_session.Queue
-
-    if len(queue) == 0:
-        return None
-    else:
-        popped = queue.pop(0)
-
-    sessions.find_one_and_update({"ID": session_id}, {"$pop": {"Queue": -1}})
-    return popped
-
-def getTopics(session_id):
-    my_session = Session.parse_obj(sessions.find_one({"ID": session_id}))
-    topics = my_session.Topics
-    return list(topics)
-
 #Logic for adding a tutor to the session
 @app.post("/tutor/join")
 async def tutorJoin(request: TutorRequest):
@@ -132,27 +107,7 @@ async def tutorJoin(request: TutorRequest):
 
     return currentSession
 
-
-def sessionExists(session_id):
-    if sessions.find_one( { "ID": session_id } ):
-        return True
-    return False
-
-#creates a link to invite a tutor 
-def generateTutorLink(sid, tid):
-    return f"{frontend_host}/{sid}/{tid}/tutor/join"
-    
-#creates a link to invite a tutor 
-def generateStudentLink(sid, stid):
-    return f"{frontend_host}/{sid}/{stid}/student/join"
-
-
-@app.get("/getCurrentMeetings/{SessionID}")
-async def getCurrentMeetings(SessionID : str):
-    currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
-    currentMeetings = currentSession.Meetings
-    return dict(currentMeetings)
-
+# logic for tutor taking leave from a session.
 @app.post("/tutor/leave")
 async def deactivateTutor(request: TutorLeaveRequest):
     left_timestamp = datetime.now().isoformat()
@@ -172,7 +127,7 @@ async def deactivateTutor(request: TutorLeaveRequest):
     # return updated session
     return getSessionFromId(request.session_id)
 
-
+# update the tutor upon rejoin.
 @app.post("/tutor/update")
 async def updateTutor(request: UpdateRequest):
     session = sessions.find_one({"ID" : request.session})
@@ -187,3 +142,74 @@ async def updateTutor(request: UpdateRequest):
         sessions.find_one_and_replace({ 'ID': request.session}, session)
     # return updated session
     return getSessionFromId(request.session)
+
+# post request to create meeting between Tutorer and Student.
+@app.post("/createMeeting")
+async def createMeeting(request: MeetingRequest):
+    next_student = Student.parse_obj(dequeueStudent(request.session_id))
+    if next_student == None:
+        # no student in queue
+        return 200
+    tutor = Tutor.parse_obj(getTutor(request.session_id, request.tutor_id))
+    meeting = Meeting(Tutor=dict(tutor), Student=dict(next_student), Topic=next_student.question, StartTime = datetime.now().isoformat(), Active = True, EndTime = "").dict()
+    sessions.find_one_and_update({"ID": request.session_id}, {"$push": {"Meetings": meeting}})
+    return getSessionFromId(request.session_id)
+
+# get all current meetings within the database.
+@app.get("/getCurrentMeetings/{SessionID}")
+async def getCurrentMeetings(SessionID : str):
+    currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
+    currentMeetings = currentSession.Meetings
+    return dict(currentMeetings)
+
+
+######################## HELPER FUNCTIONS ########################
+
+
+# returns the session given the session ID.
+def getSessionFromId(SessionID :str):
+    return Session.parse_obj(sessions.find_one({"ID":SessionID}))
+
+# Takes in a student in JSON format, and inserts into 
+# the beginning of the session queue denoted by session_id.
+def enqueueStudent(session_id, student):
+    sessions.find_one_and_update({"ID" : session_id}, {"$push": {"Queue": student}})
+
+# Dequeues a student from the session_id queue.
+def dequeueStudent(session_id):
+    my_session = Session.parse_obj(sessions.find_one({"ID":session_id}))
+
+    queue = my_session.Queue
+
+    if len(queue) == 0:
+        return None
+    else:
+        popped = queue.pop(0)
+
+    sessions.find_one_and_update({"ID": session_id}, {"$pop": {"Queue": -1}})
+    return popped
+
+# grabs a tutors information given a valid session and tutor id.
+def getTutor(session_id, tutor_id):
+    session = Session.parse_obj(sessions.find_one({"ID": session_id}))
+    tutors = session.Tutors
+
+    for tutor in tutors:
+        if tutor.ID == tutor_id:
+            return tutor
+    
+    return Tutor()
+
+# grab all topics from a session.
+def getTopics(session_id):
+    my_session = Session.parse_obj(sessions.find_one({"ID": session_id}))
+    topics = my_session.Topics
+    return list(topics)
+
+#creates a link to invite a tutor 
+def generateTutorLink(sid, tid):
+    return f"{frontend_host}/{sid}/{tid}/tutor/join"
+    
+#creates a link to invite a tutor 
+def generateStudentLink(sid, stid):
+    return f"{frontend_host}/{sid}/{stid}/student/join"

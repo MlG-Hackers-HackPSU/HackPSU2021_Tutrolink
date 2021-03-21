@@ -76,3 +76,7 @@ class UpdateRequest(BaseModel):
 class StudentLeaveRequest(BaseModel):
     session_id: str
     student_id: str
+
+class MeetingRequest(BaseModel):
+    session_id: str
+    tutor_id: str
