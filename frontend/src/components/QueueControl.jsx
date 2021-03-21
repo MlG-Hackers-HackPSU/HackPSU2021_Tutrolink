@@ -14,13 +14,26 @@ function QueueControl({ inQueue, openQuestionModal,
         })
     }
 
+    if(student){
+        return (
+            <section className={styles.content}>
+                <Button variant='success' onClick={openQuestionModal} disabled={inQueue}>
+                    Join Queue
+                </Button>
+                <Button variant='danger' onClick={leaveQueue} disabled={!(inQueue && me)} >
+                    Leave Queue
+                </Button>
+            </section>
+        )
+    }
+
     return (
         <section className={styles.content}>
-            <Button variant='success' onClick={openQuestionModal} disabled={inQueue}>
-                Join Queue
+            <Button variant='success' onClick={openAnswerModal} disabled={inQueue}>
+                Ready Up
             </Button>
             <Button variant='danger' onClick={leaveQueue} disabled={!(inQueue && me)} >
-                Leave Queue
+                Done for now
             </Button>
         </section>
     )
