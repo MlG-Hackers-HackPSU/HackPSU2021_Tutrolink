@@ -187,3 +187,7 @@ async def updateTutor(request: UpdateRequest):
         sessions.find_one_and_replace({ 'ID': request.session}, session)
     # return updated session
     return getSessionFromId(request.session)
+
+@app.get("/check")
+async def check():
+    return True

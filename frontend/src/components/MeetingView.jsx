@@ -1,9 +1,9 @@
 import { Alert } from 'react-bootstrap'
 
-function MeetingView({ name, taName, taContactLink }) {
+function MeetingView({ name, taName, taContactLink,session,auth,student,me,setActiveMeeting }) {
     return (
         <Alert variant="info">
-            <Alert.Heading>Congratulations, you made it!</Alert.Heading>
+            <Alert.Heading>Congratulations,{me.name}, you made  it!</Alert.Heading>
             <p>
                 Click <a href={taContactLink} target="_blank" rel="noreferrer">here</a> to meet 
                 with {taName} to discuss your question.

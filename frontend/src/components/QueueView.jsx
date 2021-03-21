@@ -30,6 +30,8 @@ function QueueView({ student, session, id }) {
     const closeAnswerModal = () => setAnswerModalOpen(false)
     const closeModifyModal = () => setModifyModalOpen(false)
     const [activeMeeting, setActiveMeeting] = useState(null)
+    const recieveInvite = () => setActiveMeeting(true)
+    const endMeeting = () => setActiveMeeting(false)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [queue, setQueue] = useState(null)
     const [me, setMe] = useState(null)
@@ -42,6 +44,13 @@ function QueueView({ student, session, id }) {
             setQueue(queue)
             setIsLoading(false)
         })
+        if(cookies.id){
+            client.checkMeeting(session,cookies.id).then(invited => {
+            console.log(invited)
+            setActiveMeeting(invited)
+            })
+        }
+            
     }
 
     useEffect(() => {
@@ -82,6 +91,7 @@ function QueueView({ student, session, id }) {
                             update={update}
                         />
                     </Col>
+                    
                     <Col lg={{span: 8}}>
                         <TitleCard 
                             title={queue.SessionName}
@@ -108,11 +118,12 @@ function QueueView({ student, session, id }) {
                     <Col lg={{span: 4}}>
                         <TAView tas={queue.Tutors} />
                     </Col>
-                    <Col lg={{span: 8}}>
+                    <Col lg={{span: 6}}>
                         { activeMeeting && <MeetingView 
-                            name={activeMeeting.name} 
+                            me = {me}
                             taName={activeMeeting.taName}
                             taContactLink={activeMeeting.taContactLink}
+                            setActiveMeeting={setActiveMeeting}
                         /> }
                         <StudentView queue={queue.Queue?.filter(student => student.active)} me={me} />
                     </Col>
