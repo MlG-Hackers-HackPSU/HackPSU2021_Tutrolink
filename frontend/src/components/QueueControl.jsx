@@ -4,7 +4,7 @@ import styles from './QueueControl.module.css'
 
 function QueueControl({ inQueue, openQuestionModal, 
     me, session, setQueue, setMe, setInQueue, student,
-    openAnswerModal }) {
+    openAnswerModal,openModifyModal }) {
 
     const leaveQueue = () => {
         client.leaveRoom(session, me?.student_id).then(queue => {
@@ -17,7 +17,6 @@ function QueueControl({ inQueue, openQuestionModal,
     const deactivate = () => {
         client.deactivateTa(session, me?.ID).then(queue => {
             setQueue(queue)
-            setMe(null)
             setInQueue(false)
         })
     }
@@ -30,6 +29,19 @@ function QueueControl({ inQueue, openQuestionModal,
                 </Button>
                 <Button variant='danger' onClick={leaveQueue} disabled={!(inQueue && me)} >
                     Leave Queue
+                </Button>
+            </section>
+        )
+    }
+
+    if (me) {
+        return (
+            <section className={styles.content}>
+                <Button variant='success' onClick={openModifyModal} disabled={inQueue}>
+                    Rejoin
+                </Button>
+                <Button variant='danger' onClick={deactivate} disabled={!(inQueue && me)} >
+                    Done for now
                 </Button>
             </section>
         )
