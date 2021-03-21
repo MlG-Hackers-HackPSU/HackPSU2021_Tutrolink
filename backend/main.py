@@ -264,10 +264,14 @@ def calculateQueueTime(session_id, student_id):
 
     for meeting in my_session['Meetings']:
         num += 1
-        if not meeting['Active']:
-            total_wait_time += (datetime(meeting['EndTime']) - datetime(meeting['StartTime'])).total_seconds()
+        if not meeting.Active:
+            if not meeting.EndTime:
+                continue
+            end = datetime.fromisoformat(str(meeting.EndTime))
+            start = datetime.fromisoformat(str(meeting.StartTime))
+            total_wait_time += (end - start).total_seconds()
         else:
-            total_wait_time += (datetime.now() - datetime(meeting['StartTime'])).total_seconds()
+            total_wait_time += (datetime.now() - datetime.fromisoformat(meeting.StartTime)).total_seconds()
             num_ahead += 1
         
 
@@ -282,4 +286,3 @@ def calculateQueueTime(session_id, student_id):
         num_ahead += 1
 
     return QueueETAResponce(total_seconds=int(num_ahead * avg_wait_time_p_question))
-
