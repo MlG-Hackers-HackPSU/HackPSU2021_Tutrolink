@@ -22,11 +22,19 @@ const { default: client } = require("../client/client");
 // // // Chart variables
 // #############################
 
+const TUTOR_LINK = /^\/(.+)\/(.+)\/tutor\/join\/?/
+
+const SessionID = 'fHiILHZJBtLSBzn0_f4S5A'
 const test = [20,20,20,20,20,20]
-function tests(SessionID){
-  const session = client.getRoom(SessionID)
-  return session
-}
+
+const session = client.getRoom(SessionID)
+
+
+
+
+
+
+
 
 // chartExample1 and chartExample2 options
 let chart1_2_options = {
