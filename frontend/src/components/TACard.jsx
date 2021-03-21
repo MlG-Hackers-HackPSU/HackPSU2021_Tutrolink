@@ -1,32 +1,17 @@
+import { DateTime } from 'luxon'
 import styles from './TACard.module.css'
 
-function TACard({ name, helping, duration, idx,status }) {
-    if (status) {
-        return (
-            <section className={styles.content}>
-                <span className={styles.name}>{name}</span>
-                { helping ? (
-                    <span className={styles.help}>
-                        &nbsp;is helping {helping.name} for {duration.get('minutes')} minutes.
-                    </span>
-                ) : (
-                    <span className={styles.ready}>
-                        {" "}is ready to accept a student!
-                    </span>
-                )}
-            </section>
-        )
-    }
+function TACard({ tutor, meeting }) {
     return (
         <section className={styles.content}>
-            <span className={styles.name}>{name}</span>
-            { helping ? (
+            <span className={styles.name}>{tutor.Name}</span>
+            { meeting ? (
                 <span className={styles.help}>
-                    &nbsp;is helping {helping.name} for {duration.get('minutes')} minutes.
+                    &nbsp;is helping {meeting.Student.name} for {-Math.round(DateTime.fromISO(meeting.StartTime, {zone: 'utc'}).diffNow('minutes').get('minutes'))} minutes.
                 </span>
             ) : (
                 <span className={styles.ready}>
-                    {" "}is not ready to take a student
+                    {" "}is ready to take a student!
                 </span>
             )}
         </section>

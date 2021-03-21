@@ -4,20 +4,17 @@ import client from '../client/client.js'
 
 function AnswerModal({ modalOpen, closeModal, 
     setInQueue, setQueue, sessionId, auth, setMe, setCookie }) {
-
-
-        const[name, setName] =  useState(null)
-        const[link, setLink] = useState(null)
+    const[name, setName] =  useState(null)
+    const[link, setLink] = useState(null)
 
     const ask = () => {
         client.taEnter(sessionId, auth,name,link).then(queue => {
-            console.log(queue)
             setQueue(queue)
             setInQueue(true)
             //we're the last student in the queue
             const me = queue.Tutors[queue.Tutors.length - 1]
             setMe(me) 
-            setCookie('id', me.ID)
+            setCookie('tutor_id', me.ID)
             console.log(me)
         })
         closeModal()

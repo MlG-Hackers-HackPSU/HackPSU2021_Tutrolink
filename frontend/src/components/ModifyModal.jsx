@@ -4,17 +4,12 @@ import client from '../client/client.js'
 
 function ModifyModal({ modalOpen, closeModal, 
     setInQueue, setQueue, sessionId, auth, ID, cookies }) {
-
-
-        const[name, setName] =  useState(null)
-        const[link, setLink] = useState(null)
+        const[link, setLink] = useState('')
 
     const ask = () => {
-        client.taUpdate(sessionId, auth,cookies.id,link).then(queue => {
-            console.log(queue)
+        client.taUpdate(sessionId, auth, cookies.tutor_id, link).then(queue => {
             setQueue(queue)
             setInQueue(true)
-            //we're the last student in the queue
         })
         closeModal()
     }
@@ -37,7 +32,7 @@ function ModifyModal({ modalOpen, closeModal,
                 <Button variant="secondary" onClick={closeModal}>
                     Close
                 </Button>
-                <Button variant="primary" onClick={ask} disabled={!name && !link}>
+                <Button variant="primary" onClick={ask} disabled={!link}>
                     Register
                 </Button>
             </Modal.Footer>

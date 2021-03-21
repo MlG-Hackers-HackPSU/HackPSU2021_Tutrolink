@@ -145,15 +145,30 @@ async def updateTutor(request: UpdateRequest):
 
 
 # post request to create meeting between Tutorer and Student.
-@app.post("/createMeeting")
+@app.post("/meetings")
 async def createMeeting(request: MeetingRequest):
-    next_student = Student.parse_obj(dequeueStudent(request.session_id))
-    if next_student == None:
-        # no student in queue
-        return 200
     tutor = Tutor.parse_obj(getTutor(request.session_id, request.tutor_id))
-    meeting = Meeting(Tutor=dict(tutor), Student=dict(next_student), Topic=next_student.question, StartTime = datetime.now().isoformat(), Active = True, EndTime = "").dict()
-    sessions.find_one_and_update({"ID": request.session_id}, {"$push": {"Meetings": meeting}})
+    student = Student.parse_obj(getStudent(request.session_id, request.student_id))
+
+    start_timestamp = datetime.now().isoformat()
+    meeting = Meeting(Tutor=tutor, Student=student, Topic=student.question, StartTime=start_timestamp)
+    session = sessions.find_one({"ID" : request.session_id})
+    session['Meetings'].append(meeting.dict())
+    for idx, queued_student in enumerate(session['Queue']):
+        if student.student_id == queued_student['student_id'] and queued_student['active']:
+            session['Queue'][idx]['active'] = False
+            session['Queue'][idx]['left_queue_time'] = start_timestamp
+    sessions.find_one_and_replace({"ID" : request.session_id}, session)
+    return getSessionFromId(request.session_id)
+
+# set meeting status to not active
+@app.post("/meetings/deactivate")
+async def deactivateMeeting(request: MeetingRequest):
+    session = sessions.find_one({"ID" : request.session_id})
+    for idx, meeting in enumerate(session['Meetings']):
+        if meeting['Active'] and meeting['Student']['student_id'] == request.student_id and meeting['Tutor']['ID'] == request.tutor_id:
+            session['Meetings'][idx]['Active'] = False
+    sessions.find_one_and_replace({"ID" : request.session_id}, session)
     return getSessionFromId(request.session_id)
 
 # get all current meetings within the database.
@@ -168,7 +183,7 @@ async def getCurrentMeetings(SessionID : str):
 async def checkMeetings(SessionID:str,StudentID:str):
     currentSession = sessions.find_one({"ID" : SessionID})
     for i in range(len(currentSession['Meetings'])):
-        if(currentSession['Meetings'][i]['Student'][student_id] == StudentID):
+        if(currentSession['Meetings'][i]['Student']["student_id"] == StudentID):
             return currentSession['Meetings'][i]
     return False
   
@@ -202,13 +217,18 @@ def dequeueStudent(session_id):
 # grabs a tutors information given a valid session and tutor id.
 def getTutor(session_id, tutor_id):
     session = Session.parse_obj(sessions.find_one({"ID": session_id}))
-    tutors = session.Tutors
-
-    for tutor in tutors:
+    for tutor in session.Tutors:
         if tutor.ID == tutor_id:
             return tutor
-    
-    return Tutor()
+    return None
+
+# grabs a students information given a valid session and student it
+def getStudent(session_id, student_id):
+    session = Session.parse_obj(sessions.find_one({"ID": session_id}))
+    for student in session.Queue:
+        if student.student_id == student_id:
+            return student
+    return None
 
 # grab all topics from a session.
 def getTopics(session_id):

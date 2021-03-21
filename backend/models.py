@@ -29,8 +29,8 @@ class Meeting(BaseModel):
     Student: Student
     Topic: str
     StartTime: str
-    Active: bool = False
-    EndTime: str
+    Active: bool = True
+    EndTime: Optional[str]
 
 class Session(BaseModel):
     ID: str
@@ -80,3 +80,4 @@ class StudentLeaveRequest(BaseModel):
 class MeetingRequest(BaseModel):
     session_id: str
     tutor_id: str
+    student_id: str

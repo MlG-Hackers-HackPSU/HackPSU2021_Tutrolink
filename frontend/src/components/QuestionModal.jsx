@@ -10,13 +10,12 @@ function QuestionModal({ modalOpen, closeModal, questions,
     const ask = () => {
         client.joinRoom(sessionId, studentId, question).then(queue => {
             setQueue(queue)
+            console.log('ask')
             setInQueue(true)
             // we're the last student in the queue
             const me = queue.Queue[queue.Queue.length - 1]
             setMe(me) 
-            setCookie('id', me.student_id)
-            console.log("Heres the cookie:")
-            console.log(me.student_id)
+            setCookie('student_id', me.student_id)
         })
         closeModal()
     }
