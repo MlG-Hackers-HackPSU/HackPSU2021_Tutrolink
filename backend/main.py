@@ -188,6 +188,11 @@ async def updateTutor(request: UpdateRequest):
     # return updated session
     return getSessionFromId(request.session)
 
-@app.get("/check")
-async def check():
-    return True
+@app.get("/check/{SessionID}/{StudentID}")
+async def checkMeetings(SessionID:str,StudentID:str):
+    currentSession = sessions.find_one({"ID" : SessionID})
+    for i in range(len(currentSession['Meetings'])):
+        if(currentSession['Meetings'][i]['Student'][student_id] == StudentID):
+            return currentSession['Meetings'][i]
+    return False
+
