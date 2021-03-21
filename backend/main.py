@@ -10,6 +10,7 @@ from typing import (Optional,List)
 from random import choice
 from names import generateName
 from fastapi.middleware.cors import CORSMiddleware
+from models import *
 
 frontend_host = os.environ["FRONTEND_URI"]
 origins = [ frontend_host ]
@@ -28,73 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Here are the objects that will be sent back and forth
-
-class Review(BaseModel):
-    Rating: int
-    Comment: str
-
-
-class Student(BaseModel):
-    name: str
-    question: str
-    student_id: str
-    joined_queue_time: str
-    active: bool = True
-    left_queue_time: Optional[str] 
-
-
-class Tutor(BaseModel):
-    ID: str
-    Name: str = "Socrates"
-    Reviews : List[Review] = []
-    StartTime: str
-    Active: bool = True
-    contact_link : str
-    EndTime: Optional[str]
-    
-class Meeting(BaseModel):
-    Tutor: Tutor
-    Student: Student
-    Topic: str
-    StartTime: str
-    Active: bool = False
-    EndTime: str
-
-class Session(BaseModel):
-    ID: str
-    SessionName : str = "Save DaBaby in Minecraft"
-    Topics: List[str]
-    Tutors: List[Tutor] = []
-    Queue: List[Student] = []
-    Meetings: List[Meeting] = []
-    Start: str
-    End: str
-    SID: str
-    TID: str
-    tutor_link: str
-    student_link: str
-
-class TutorRequest(BaseModel):
-    name: str
-    contact_link: str
-    session: str
-    auth: str
-
-class TutorLeaveRequest(BaseModel):
-    session_id: str
-    tutor_id: str
-
-class StudentRequest(BaseModel):
-    session_id: str
-    sid: str
-    question: str
-
-class SessionRequest(BaseModel):
-    start : str
-    end : str
-    room_title : str
-    questions : List[str]
 
 sessions = client.tutrolink.sessions
 
@@ -136,9 +70,7 @@ async def addStudent(request: StudentRequest):
 
     return getSessionFromId(request.session_id)
 
-class StudentLeaveRequest(BaseModel):
-    session_id: str
-    student_id: str
+
 
 # outgoing student, leaves all meeting and queue
 @app.post("/student/leave")
@@ -230,7 +162,7 @@ async def deactivateTutor(request: TutorLeaveRequest):
     for i in range(len(session['Tutors'])):
         if request.tutor_id == session['Tutors'][i]['ID']:
             session['Tutors'][i]['Active'] = False
-            session['Tutors'][i]['left_queue_time'] = left_timestamp
+            session['Tutors'][i]['EndTime'] = left_timestamp
     for i in range(len(session['Meetings'])):
         if request.tutor_id == session['Meetings'][i]['Tutor']['ID']:
             session['Meetings'][i]['Active'] = False
@@ -239,3 +171,19 @@ async def deactivateTutor(request: TutorLeaveRequest):
     sessions.find_one_and_replace({ 'ID': request.session_id }, session)
     # return updated session
     return getSessionFromId(request.session_id)
+
+
+@app.post("/tutor/update")
+async def updateTutor(request: UpdateRequest):
+    session = sessions.find_one({"ID" : request.session})
+    if (request.auth == session["TID"]):
+        for i in range(len(session['Tutors'])):
+            if request.ID == session['Tutors'][i]['ID']:
+                session['Tutors'][i]['Active'] = True
+                session['Tutors'][i]['StartTime'] = datetime.now().isoformat()
+                session['Tutors'][i]['contact_link'] = request.contact_link
+                session['Tutors'][i]['EndTime'] = ''
+        # commit changes
+        sessions.find_one_and_replace({ 'ID': request.session}, session)
+    # return updated session
+    return getSessionFromId(request.session)

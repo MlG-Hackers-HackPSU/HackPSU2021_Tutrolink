@@ -61,6 +61,15 @@ class Client {
         }).then(response => response?.data)
     }
 
+    taUpdate(session_id,auth,ID,link){
+        return axios.post(`${this.uri}/tutor/update`,{
+            'contact_link' : link,
+            'session' : session_id,
+            'auth' : auth,
+            'ID': ID
+        }).then(response => response?.data)
+    }
+
     getQueueStatus() {
         // TODO
     }
