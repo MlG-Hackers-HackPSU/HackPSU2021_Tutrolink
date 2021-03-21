@@ -25,6 +25,8 @@ import Footer from "../components/AdminFooter.jsx";
 
 import routes from "../assets/routes.jsx";
 
+import client from '../client/client'
+
 // import logo from "assets/img/react-logo.png";
 import { BackgroundColorContext } from "../components/BackgroundColorContext.jsx";
 
