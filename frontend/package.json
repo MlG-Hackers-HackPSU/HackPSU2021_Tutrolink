@@ -9,7 +9,6 @@
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "dotenv": "^8.2.0",
-    "chart.js": "^2.9.4",
     "luxon": "^1.26.0",
     "react": "^17.0.1",
     "react-bootstrap": "^1.5.2",
