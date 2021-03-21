@@ -15,9 +15,18 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+
+const { default: client } = require("../client/client");
+
 // ##############################
 // // // Chart variables
 // #############################
+
+const test = [20,20,20,20,20,20]
+function tests(SessionID){
+  const session = client.getRoom(SessionID)
+  return session
+}
 
 // chartExample1 and chartExample2 options
 let chart1_2_options = {
@@ -77,7 +86,7 @@ let chart1_2_options = {
       ],
     },
   };
-  
+    
   // #########################################
   // // // used inside src/views/Dashboard.js
   // #########################################
@@ -287,7 +296,8 @@ let chart1_2_options = {
             borderDash: [],
             borderDashOffset: 0.0,
             // Data will be dynamic
-            data: [53, 20, 10, 80, 100, 45],
+            //data: [53, 20, 10, 80, 100, 45],
+            data: test,
           },
         ],
       };
