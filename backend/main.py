@@ -9,11 +9,6 @@ from pydantic import BaseModel
 from typing import (Optional,List)
 from random import choice
 from names import generateName
-from fastapi.middleware.cors import CORSMiddleware
-from models import *
-
-frontend_host = os.environ["FRONTEND_URI"]
-origins = [ frontend_host ]
 
 app = FastAPI()
 client = MongoClient(
@@ -21,40 +16,80 @@ client = MongoClient(
     username=os.environ["MONGO_USERNAME"], 
     password=os.environ["MONGO_PASSWORD"])
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+frontend_host = os.environ["FRONTEND_URI"]
 
+#Here are the objects that will be sent back and forth
+
+class Review(BaseModel):
+    Rating: int
+    Comment: str
+
+class Meeting(BaseModel):
+    Tutor: str
+    Student: str
+    Topic: str
+    StartTime: datetime
+
+class Student(BaseModel):
+    name: str
+    question: str
+
+
+class Tutor(BaseModel):
+    ID: str
+    Name: str = "Socrates"
+    Reviews : List[Review] = []
+
+
+class Session(BaseModel):
+    ID: str
+    SessionName : str = "Save DaBaby in Minecraft"
+    Topics: List[str]
+    Tutors: List[Tutor] = []
+    Queue: List[Student] = []
+    ActiveMeetings: List[Meeting] = []
+    Start: str
+    End: str
+    SID: str
+    TID: str
+    tutor_link: Optional[str]
+    student_link: Optional[str]
+
+class TutorRequest(BaseModel):
+    name: str
+    contact_link: str
+
+class StudentRequest(BaseModel):
+    session_id: str
+    sid: str
+    question: str
+
+class SessionRequest(BaseModel):
+    start : str
+    end : str
+    room_title : str
+    questions : List[str]
 
 sessions = client.tutrolink.sessions
 
-def newID(n):
-    return secrets.token_urlsafe(n)
+@app.get("/sessions/{SessionID}")
+async def getSession(SessionID : str):
+    currentSession = sessions.find_one({"ID":SessionID})
+    studentLink = generateStudentLink(SessionID)
+    tutorLink = generateTutorLink(SessionID)
+    currentSession['student_link'] = studentLink
+    currentSession['tutor_link'] = tutorLink
+    send_back = Session.parse_obj(currentSession)
+    return send_back
 
 @app.post("/sessions")
 async def createSession(sessionRequest : SessionRequest):
-    id = newID(16)
-    sid = newID(5)
-    tid = newID(5)
-    newSession = Session(
-        ID = id, Topics = sessionRequest.questions, SessionName = sessionRequest.room_title,
-        Start = sessionRequest.start, End = sessionRequest.end, 
-        SID = sid, TID = tid,
-        tutor_link = generateTutorLink(id, tid), student_link = generateStudentLink(id, sid),
-    )
+    id = secrets.token_urlsafe(16)
+    sid = secrets.token_urlsafe(5)
+    tid = secrets.token_urlsafe(5)
+    newSession = Session(ID = id,Topics = sessionRequest.questions,SessionName = sessionRequest.room_title, Start = sessionRequest.start, End = sessionRequest.end,SID = sid, TID = tid)
     sessions.insert_one(dict(newSession))
     return newSession
-
-@app.get("/sessions/{SessionID}")
-async def getSession(SessionID : str):
-    return getSessionFromId(SessionID)
-
-def getSessionFromId(SessionID :str):
-    return Session.parse_obj(sessions.find_one({"ID":SessionID}))
 
 # incoming student, give them session information such as
 # queue information, questions stuff like that.
@@ -62,35 +97,36 @@ def getSessionFromId(SessionID :str):
 async def addStudent(request: StudentRequest):
 
     name = generateName()
-    student = Student(
-        name=name, question=request.question, student_id=secrets.token_urlsafe(16),
-        joined_queue_time=datetime.now().isoformat()
-    ).dict()
+    student = Student(name=name, question=request.question).dict()
     enqueueStudent(request.session_id, student)
 
-    return getSessionFromId(request.session_id)
+    return 200
+
+def getTopics(session_id):
+    my_session = Session.parse_obj(sessions.find_one({"ID": session_id}))
+    topics = my_session.Topics
+    return list(topics)
+
+#Logic for adding a tutor to the session
+@app.post("/Tutor/{token}/join")
+async def tutorJoin(token: str):
+    tID = secrets.token_urlsafe(4)
+    newTutor = Tutor(ID = tID).dict()
+    sessions.find_one_and_update({'ID': token}, { '$push': { 'Tutors': newTutor }})
+    return "pog"
 
 
+def sessionExists(session_id):
+    if sessions.find_one( { "ID": session_id } ):
+        return True
+    return False
 
-# outgoing student, leaves all meeting and queue
-@app.post("/student/leave")
-async def deactivateStudent(request: StudentLeaveRequest):
-    left_timestamp = datetime.now().isoformat()
-    session = sessions.find_one({ 'ID': request.session_id })
-    
-    # deactivate student
-    for i in range(len(session['Queue'])):
-        if request.student_id == session['Queue'][i]['student_id']:
-            session['Queue'][i]['active'] = False
-            session['Queue'][i]['left_queue_time'] = left_timestamp
-    for i in range(len(session['Meetings'])):
-        if request.student_id == session['Meetings'][i]['Student']['student_id']:
-            session['Meetings'][i]['Active'] = False
-            session['Meetings'][i]['EndTime'] = left_timestamp
-    # commit changes
-    sessions.find_one_and_replace({ 'ID': request.session_id }, session)
-    # return updated session
-    return getSessionFromId(request.session_id)
+
+@app.get("/getCurrentMeetings/{SessionID}")
+async def getCurrentMeetings(SessionID : str):
+    currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
+    currentMeetings = currentSession.ActiveMeetings
+    return dict(currentMeetings)
 
 # Takes in a student in JSON format, and inserts into 
 # the beginning of the session queue denoted by session_id.
@@ -111,79 +147,16 @@ def dequeueStudent(session_id):
     sessions.find_one_and_update({"ID": session_id}, {"$pop": {"Queue": -1}})
     return popped
 
-def getTopics(session_id):
-    my_session = Session.parse_obj(sessions.find_one({"ID": session_id}))
-    topics = my_session.Topics
-    return list(topics)
-
-#Logic for adding a tutor to the session
-@app.post("/tutor/join")
-async def tutorJoin(request: TutorRequest):
-    currentSession = Session.parse_obj(sessions.find_one({"ID":request.session}))
-    if (request.auth == currentSession.TID):
-
-        tID = secrets.token_urlsafe(4)
-
-        newTutor = dict(Tutor(ID = tID,Name = request.name,contact_link = request.contact_link,StartTime = datetime.now().isoformat()))
-
-        sessions.find_one_and_update({'ID': request.session}, { '$push': { 'Tutors': newTutor }})
-
-        currentSession = Session.parse_obj(sessions.find_one({"ID":request.session}))
-
-    return currentSession
-
-
-def sessionExists(session_id):
-    if sessions.find_one( { "ID": session_id } ):
-        return True
-    return False
-
 #creates a link to invite a tutor 
-def generateTutorLink(sid, tid):
-    return f"{frontend_host}/{sid}/{tid}/tutor/join"
+def generateTutorLink(SessionID : str):
+    tid = Session.parse_obj(sessions.find_one({"ID":SessionID})).TID
+    return f"{frontend_host}/{SessionID}/{tid}/tutor/join"
     
 #creates a link to invite a tutor 
-def generateStudentLink(sid, stid):
-    return f"{frontend_host}/{sid}/{stid}/student/join"
+def generateStudentLink(SessionID):
+    sid = Session.parse_obj(sessions.find_one({"ID":SessionID}))
+    sid = sid.SID
+    return f"{frontend_host}/{SessionID}/{sid}/student/join"
 
-
-@app.get("/getCurrentMeetings/{SessionID}")
-async def getCurrentMeetings(SessionID : str):
-    currentSession = Session.parse_obj(sessions.find_one({"ID" : SessionID}))
-    currentMeetings = currentSession.Meetings
-    return dict(currentMeetings)
-
-@app.post("/tutor/leave")
-async def deactivateTutor(request: TutorLeaveRequest):
-    left_timestamp = datetime.now().isoformat()
-    session = sessions.find_one({ 'ID': request.session_id })
-    
-    # deactivate student
-    for i in range(len(session['Tutors'])):
-        if request.tutor_id == session['Tutors'][i]['ID']:
-            session['Tutors'][i]['Active'] = False
-            session['Tutors'][i]['EndTime'] = left_timestamp
-    for i in range(len(session['Meetings'])):
-        if request.tutor_id == session['Meetings'][i]['Tutor']['ID']:
-            session['Meetings'][i]['Active'] = False
-            session['Meetings'][i]['EndTime'] = left_timestamp
-    # commit changes
-    sessions.find_one_and_replace({ 'ID': request.session_id }, session)
-    # return updated session
-    return getSessionFromId(request.session_id)
-
-
-@app.post("/tutor/update")
-async def updateTutor(request: UpdateRequest):
-    session = sessions.find_one({"ID" : request.session})
-    if (request.auth == session["TID"]):
-        for i in range(len(session['Tutors'])):
-            if request.ID == session['Tutors'][i]['ID']:
-                session['Tutors'][i]['Active'] = True
-                session['Tutors'][i]['StartTime'] = datetime.now().isoformat()
-                session['Tutors'][i]['contact_link'] = request.contact_link
-                session['Tutors'][i]['EndTime'] = ''
-        # commit changes
-        sessions.find_one_and_replace({ 'ID': request.session}, session)
-    # return updated session
-    return getSessionFromId(request.session)
+def newID(n):
+    return secrets.token_urlsafe(n)
