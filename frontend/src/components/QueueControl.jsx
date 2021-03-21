@@ -4,7 +4,7 @@ import styles from './QueueControl.module.css'
 
 function QueueControl({ inQueue, openQuestionModal, 
     me, session, setQueue, setMe, setInQueue, student,
-    openAnswerModal,openModifyModal }) {
+    openAnswerModal,openModifyModal,openFeedbackModal }) {
 
     const leaveQueue = () => {
         client.leaveRoom(session, me?.student_id).then(queue => {
