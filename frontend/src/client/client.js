@@ -41,6 +41,26 @@ class Client {
         }).then(response => response?.data)
     }
 
+    taEnter(sessionID, auth, name, link) {
+        console.log(sessionID)
+        console.log(auth)
+        console.log(name)
+        console.log(link)
+        return axios.post(`${this.uri}/tutor/join`,{
+            'name' : name,
+            'contact_link' : link,
+            'session' : sessionID,
+            'auth' : auth
+        }).then(response => response?.data)
+    }
+
+    deactivateTa(sessionId, tutorId) {
+        return axios.post(`${this.uri}/tutor/leave`, {
+            'session_id': sessionId,
+            'tutor_id': tutorId
+        }).then(response => response?.data)
+    }
+
     getQueueStatus() {
         // TODO
     }

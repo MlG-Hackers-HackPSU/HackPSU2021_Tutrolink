@@ -10,6 +10,7 @@ import TAView from './TAView.jsx'
 import MeetingView from './MeetingView.jsx'
 import StudentView from './StudentView.jsx'
 import QuestionModal from './QuestionModal.jsx'
+import AnswerModal from './AnswerModal.jsx'
 import client from '../client/client.js'
 import { animationInterval } from '../lib/animationInterval.js'
 
@@ -19,8 +20,11 @@ function QueueView({ student, session, id }) {
     const [isLoading, setIsLoading] = useState(true)
     const [inQueue, setInQueue] = useState(false)
     const [questionModalOpen, setQuestionModalOpen] = useState(false)
+    const [answerModalOpen, setAnswerModalOpen] = useState(false)
     const openQuestionModal = () => setQuestionModalOpen(true)
+    const openAnswerModal = () => setAnswerModalOpen(true)
     const closeQuestionModal = () => setQuestionModalOpen(false)
+    const closeAnswerModal = () => setAnswerModalOpen(false)
     const [activeMeeting, setActiveMeeting] = useState(null)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [queue, setQueue] = useState(null)
@@ -83,7 +87,8 @@ function QueueView({ student, session, id }) {
                         />
                         <QueueControl
                             inQueue={inQueue}
-                            openQuestionModal={openQuestionModal} 
+                            openQuestionModal={openQuestionModal}
+                            openAnswerModal={openAnswerModal}
                             me={me}
                             session={session}
                             setQueue={setQueue}
@@ -116,6 +121,17 @@ function QueueView({ student, session, id }) {
                 setQueue={setQueue}
                 sessionId={session}
                 studentId={id}
+                setMe={setMe}
+                setCookie={setCookie}
+            />
+            <AnswerModal
+                modalOpen={answerModalOpen}
+                closeModal={closeAnswerModal}
+                questions={queue.Topics}
+                setInQueue={setInQueue}
+                setQueue={setQueue}
+                sessionId={session}
+                auth={id}
                 setMe={setMe}
                 setCookie={setCookie}
             />

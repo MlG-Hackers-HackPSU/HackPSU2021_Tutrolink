@@ -34,13 +34,6 @@ class Review(BaseModel):
     Rating: int
     Comment: str
 
-class Meeting(BaseModel):
-    Tutor: str
-    Student: str
-    Topic: str
-    StartTime: str
-    Active: bool = False
-    EndTime: str
 
 class Student(BaseModel):
     name: str
@@ -57,8 +50,16 @@ class Tutor(BaseModel):
     Reviews : List[Review] = []
     StartTime: str
     Active: bool = True
+    contact_link : str
+    EndTime: Optional[str]
+    
+class Meeting(BaseModel):
+    Tutor: Tutor
+    Student: Student
+    Topic: str
+    StartTime: str
+    Active: bool = False
     EndTime: str
-
 
 class Session(BaseModel):
     ID: str
@@ -77,6 +78,12 @@ class Session(BaseModel):
 class TutorRequest(BaseModel):
     name: str
     contact_link: str
+    session: str
+    auth: str
+
+class TutorLeaveRequest(BaseModel):
+    session_id: str
+    tutor_id: str
 
 class StudentRequest(BaseModel):
     session_id: str
@@ -178,13 +185,20 @@ def getTopics(session_id):
     return list(topics)
 
 #Logic for adding a tutor to the session
-@app.post("/Tutor/{token}/join")
-async def tutorJoin(token: str):
-    currentSession = Session.parse_obj(sessions.find_one({"ID":token}))
-    tID = secrets.token_urlsafe(4)
-    newTutor = Tutor(ID = tID).dict()
-    sessions.find_one_and_update({'ID': token}, { '$push': { 'Tutors': newTutor }})
-    return "200"
+@app.post("/tutor/join")
+async def tutorJoin(request: TutorRequest):
+    currentSession = Session.parse_obj(sessions.find_one({"ID":request.session}))
+    if (request.auth == currentSession.TID):
+
+        tID = secrets.token_urlsafe(4)
+
+        newTutor = dict(Tutor(ID = tID,Name = request.name,contact_link = request.contact_link,StartTime = datetime.now().isoformat()))
+
+        sessions.find_one_and_update({'ID': request.session}, { '$push': { 'Tutors': newTutor }})
+
+        currentSession = Session.parse_obj(sessions.find_one({"ID":request.session}))
+
+    return currentSession
 
 
 def sessionExists(session_id):
@@ -207,3 +221,21 @@ async def getCurrentMeetings(SessionID : str):
     currentMeetings = currentSession.Meetings
     return dict(currentMeetings)
 
+@app.post("/tutor/leave")
+async def deactivateTutor(request: TutorLeaveRequest):
+    left_timestamp = datetime.now().isoformat()
+    session = sessions.find_one({ 'ID': request.session_id })
+    
+    # deactivate student
+    for i in range(len(session['Tutors'])):
+        if request.tutor_id == session['Tutors'][i]['ID']:
+            session['Tutors'][i]['Active'] = False
+            session['Tutors'][i]['left_queue_time'] = left_timestamp
+    for i in range(len(session['Meetings'])):
+        if request.tutor_id == session['Meetings'][i]['Tutor']['ID']:
+            session['Meetings'][i]['Active'] = False
+            session['Meetings'][i]['EndTime'] = left_timestamp
+    # commit changes
+    sessions.find_one_and_replace({ 'ID': request.session_id }, session)
+    # return updated session
+    return getSessionFromId(request.session_id)

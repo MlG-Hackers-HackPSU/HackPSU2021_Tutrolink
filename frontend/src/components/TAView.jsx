@@ -9,7 +9,7 @@ function TAView({ tas }) {
                 { tas?.length ? (
                     tas?.map((ta, idx) => (
                         <section className={styles.card} key={ta.name}>
-                            <TACard name={ta.name} helping={ta.helping} duration={ta.duration} idx={idx} />
+                            <TACard name={ta.Name} helping={ta.helping} duration={ta.duration} idx={idx} status={ta.Active} />
                         </section>
                     ))
                 ) : (

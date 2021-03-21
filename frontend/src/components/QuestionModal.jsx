@@ -34,17 +34,13 @@ function QuestionModal({ modalOpen, closeModal, questions,
                         ))}
                     </Form.Control>
                 </Form.Group>
-                <Form.Group>
-                    <Form.Label>Name</Form.Label>
-                    <Form.Control as="input" onChange={e => setName(e.target.value)}></Form.Control>
-                </Form.Group>
             </Form>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={closeModal}>
                     Close
                 </Button>
-                <Button variant="primary" onClick={ask} disabled={!name}>
+                <Button variant="primary" onClick={ask} disabled={!question}>
                     Join Queue
                 </Button>
             </Modal.Footer>

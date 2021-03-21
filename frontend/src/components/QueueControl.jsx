@@ -14,13 +14,34 @@ function QueueControl({ inQueue, openQuestionModal,
         })
     }
 
+    const deactivate = () => {
+        client.deactivateTa(session, me?.ID).then(queue => {
+            setQueue(queue)
+            setMe(null)
+            setInQueue(false)
+        })
+    }
+
+    if(student){
+        return (
+            <section className={styles.content}>
+                <Button variant='success' onClick={openQuestionModal} disabled={inQueue}>
+                    Join Queue
+                </Button>
+                <Button variant='danger' onClick={leaveQueue} disabled={!(inQueue && me)} >
+                    Leave Queue
+                </Button>
+            </section>
+        )
+    }
+
     return (
         <section className={styles.content}>
-            <Button variant='success' onClick={openQuestionModal} disabled={inQueue}>
-                Join Queue
+            <Button variant='success' onClick={openAnswerModal} disabled={inQueue}>
+                Ready Up
             </Button>
-            <Button variant='danger' onClick={leaveQueue} disabled={!(inQueue && me)} >
-                Leave Queue
+            <Button variant='danger' onClick={deactivate} disabled={!(inQueue && me)} >
+                Done for now
             </Button>
         </section>
     )
