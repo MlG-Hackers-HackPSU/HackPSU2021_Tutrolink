@@ -80,4 +80,3 @@ class StudentLeaveRequest(BaseModel):
 class MeetingRequest(BaseModel):
     session_id: str
     tutor_id: str
-    student_id: str
