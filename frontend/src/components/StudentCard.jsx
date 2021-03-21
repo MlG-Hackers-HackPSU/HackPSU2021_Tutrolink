@@ -1,21 +1,18 @@
 // Student Card
+import { Button } from 'react-bootstrap'
 import styles from './StudentCard.module.css'
 
-function StudentCard({ name, pos, me }) {
-    let container = null
-    if (pos % 2 == 0){
-        container = styles.container
-    }else {
-        container = styles.wcontainer
-    }
-    if (name == me){
-        pos = "⭐"
-    }
+function StudentCard({ id, name, pos, me, question, showMeet, meet, cookies }) {
+    const ticker = id === me?.student_id ? "⭐" : `${pos}`
     return (
-        <section className={container}>
-            <span>
-                {"(" + pos + ") " + name}
+        <section className={`${styles.contain} ${pos % 2 ? styles.container : styles.wcontainer}`}>
+            <span className={styles.name}>
+                { `${ticker}) ${name}`}
             </span>
+            <span className={styles.question}>
+                {question}
+            </span>
+            { showMeet && <Button variant="primary" onClick={() => meet(id, me?.ID || cookies.tutor_id)}>Meet</Button> }
         </section>
     )
 }

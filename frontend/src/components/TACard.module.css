@@ -1,0 +1,12 @@
+.content {
+    width: 100%;
+    border: 1px solid #c8c8c8;
+    padding: 0.2rem;
+
+    font-size: 0.9rem;
+    min-height: 6vh;
+}
+
+.name {
+    text-decoration: underline;
+}

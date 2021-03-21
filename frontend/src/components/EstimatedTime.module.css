@@ -1,0 +1,16 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-top: 8vh;
+}
+
+.eta {
+    font-weight: bold;
+}
+
+.update {
+    margin-top: 0.5rem;
+    height: fit-content;
+}

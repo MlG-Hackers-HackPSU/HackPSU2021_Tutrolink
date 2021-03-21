@@ -1,36 +1,30 @@
 version: '3.9'
 services:
-  backend:
-    container_name: backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - 5000:8000
-    volumes:
-      - './backend:/app'
-    environment: 
-      - CHOKIDAR_USEPOLLING=true
-      - PYTHONUNBUFFERED=1
-      - MONGO_USERNAME=${MONGO_USERNAME}
-      - MONGO_PASSWORD=${MONGO_PASSWORD}
-      - FRONTEND_URI=${FRONTEND_URI}
   frontend:
     container_name: frontend
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     ports:
-      - 3000:3000
-    volumes:
-      - './frontend:/app:cached'
-      - '/app/node_modules'
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+      - 3000:80
+    environment: 
       - REACT_APP_BACKEND_URI=${BACKEND_URI}
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - 5000:8000
+    environment: 
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - FRONTEND_URI=${FRONTEND_URI}
   database:
     container_name: database
     image: mongo
+    restart: always
     ports:
       - 27017:27017
     volumes:
