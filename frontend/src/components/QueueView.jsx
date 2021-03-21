@@ -34,14 +34,12 @@ function QueueView({ student, session, id }) {
     const closeModifyModal = () => setModifyModalOpen(false)
     const closeFeedbackModal = () => setFeedbackModalOpen(false)
     const [activeMeeting, setActiveMeeting] = useState(null)
-    const recieveInvite = () => setActiveMeeting(true)
-    const endMeeting = () => setActiveMeeting(false)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [queue, setQueue] = useState(null)
     const [me, setMe] = useState(null)
-    const [cookies, setCookie] = useCookies(['id', 'student'])
     const [rating, setRating] = useState(null)
     const [note, setNote] = useState(null)
+    const [cookies, setCookie] = useCookies(['student_id', 'tutor_id'])
 
     const updateThreshold = Duration.fromObject({ seconds: 10 })
 
@@ -49,7 +47,7 @@ function QueueView({ student, session, id }) {
         client.getRoom(session).then(queue => {
             setQueue(queue)
             setIsLoading(false)
-        })   
+        })
     }
 
     useEffect(() => {
@@ -59,14 +57,46 @@ function QueueView({ student, session, id }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setIsLoading, setQueue, setLastUpdated, setActiveMeeting, session])
 
+    // Giant update when queue gets updated
     useEffect(() => {
         setLastUpdated(DateTime.now())
-    }, [setLastUpdated, queue])
+        if (queue && student && (me?.student_id || cookies.student_id)) {
+            const meetings = queue.Meetings.filter(meeting => 
+                meeting.Active && meeting.Student.student_id === (me?.student_id || cookies.student_id))
+            if (meetings) {
+                setActiveMeeting(meetings[meetings.length - 1])
+            }
+            
+            const students = queue.Queue.filter(student => 
+                student.active && student.student_id === (me?.student_id || cookies.student_id))
+            if (students.length > 0) {
+                setInQueue(true)
+                setMe(students[students.length - 1])
+            } else {
+                setInQueue(false)
+            }
+        } else if (queue && !student && (me?.ID || cookies.tutor_id)) {
+            const meetings = queue.Meetings.filter(meeting => 
+                meeting.Active && meeting.Tutor.ID === (me?.ID || cookies.tutor_id))
+            if (meetings) {
+                setActiveMeeting(meetings[meetings.length - 1])
+            }
+
+            const tutors = queue.Tutors.filter(tutor => tutor.ID === (me?.ID || cookies.tutor_id))
+            if (tutors.length > 0) {
+                setInQueue(tutors[tutors.length - 1].Active)
+                setMe(tutors[tutors.length - 1])
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [setLastUpdated, queue, setInQueue])
 
     useEffect(() => {
         update()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoading])
+
+    console.log({inQueue})
 
     if (isLoading) {
         return (
@@ -89,12 +119,11 @@ function QueueView({ student, session, id }) {
                             updateThreshold={updateThreshold}
                             update={update}
                         />
-                    </Col>
-                    
+                    </Col>    
                     <Col lg={{span: 8}}>
                         <TitleCard 
                             title={queue.SessionName}
-                            taCount={queue.Tutors.length}
+                            taCount={queue.Tutors.filter(tutor => tutor.Active).length}
                             startTime={DateTime.fromISO(queue.Start)}
                             endTime={DateTime.fromISO(queue.End)}
                         />
@@ -116,16 +145,25 @@ function QueueView({ student, session, id }) {
                 </Row>
                 <Row className={styles.listview}>
                     <Col lg={{span: 4}}>
-                        <TAView tas={queue.Tutors} />
+                        <TAView tas={queue.Tutors.filter(ta => ta.Active)} meetings={queue.Meetings} />
                     </Col>
-                    <Col lg={{span: 6}}>
-                        { activeMeeting && <MeetingView 
-                            me = {me}
-                            taName={activeMeeting.taName}
-                            taContactLink={activeMeeting.taContactLink}
-                            setActiveMeeting={setActiveMeeting}
+                    <Col lg={{span: 8}}>
+                        { (activeMeeting || (!student && inQueue)) && <MeetingView 
+                            me={me}
+                            activeMeeting={activeMeeting}
+                            student={student}
+                            setQueue={setQueue}
+                            session={session}
                         /> }
-                        <StudentView queue={queue.Queue?.filter(student => student.active)} me={me} />
+                        <StudentView 
+                            queue={queue.Queue?.filter(student => student.active)}
+                            me={me}
+                            showMeet={!student && !activeMeeting}
+                            session={session}
+                            setQueue={setQueue}
+                            setActiveMeeting={setActiveMeeting}
+                            student={student}
+                        />
                     </Col>
                 </Row>
             </Container>

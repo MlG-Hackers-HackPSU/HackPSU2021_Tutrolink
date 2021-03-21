@@ -1,15 +1,21 @@
 import TACard from './TACard.jsx'
 import styles from './TAView.module.css'
 
-function TAView({ tas }) {
+function TAView({ tas, meetings }) {
+    const getActiveMeeting = (ta) => {
+        const ta_meetings = meetings.filter(meeting => 
+            meeting.Active && meeting.Tutor.ID === ta.ID)
+        return ta_meetings ? ta_meetings[ta_meetings.length - 1] : null
+    }
+
     return (
         <section>
             <h2 className={styles.taheader}>Answerers</h2>
             <section className={styles.content}>
                 { tas?.length ? (
-                    tas?.map((ta, idx) => (
-                        <section className={styles.card} key={ta.name}>
-                            <TACard name={ta.Name} helping={ta.helping} duration={ta.duration} idx={idx} status={ta.Active} />
+                    tas?.map((ta) => (
+                        <section className={styles.card} key={ta.ID}>
+                            <TACard tutor={ta} meeting={getActiveMeeting(ta)} />
                         </section>
                     ))
                 ) : (

@@ -42,10 +42,6 @@ class Client {
     }
 
     taEnter(sessionID, auth, name, link) {
-        console.log(sessionID)
-        console.log(auth)
-        console.log(name)
-        console.log(link)
         return axios.post(`${this.uri}/tutor/join`,{
             'name' : name,
             'contact_link' : link,
@@ -69,13 +65,21 @@ class Client {
             'ID': ID
         }).then(response => response?.data)
     }
-
-    checkMeeting(){
-        return axios.get(`${this.uri}/check`).then(response => response?.data)
+    
+    meet(session, studentId, tutorId) {
+        return axios.post(`${this.uri}/meetings`, {
+            'session_id': session,
+            'tutor_id': tutorId,
+            'student_id': studentId
+        }).then(response => response?.data)
     }
 
-    getQueueStatus() {
-        // TODO
+    leaveMeet(session, studentId, tutorId) {
+        return axios.post(`${this.uri}/meetings/deactivate`, {
+            'session_id': session,
+            'tutor_id': tutorId,
+            'student_id': studentId
+        }).then(response => response?.data)
     }
 }
 
