@@ -150,6 +150,7 @@ function QueueView({ student, session, id }) {
                 auth={id}
                 setMe={setMe}
                 setCookie={setCookie}
+                cookies = {cookies}
             />
         </main>
     )

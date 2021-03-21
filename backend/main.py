@@ -29,9 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Here are the objects that will be sent back and forth
-
-
 
 sessions = client.tutrolink.sessions
 
@@ -178,4 +175,15 @@ async def deactivateTutor(request: TutorLeaveRequest):
 
 @app.post("/tutor/update")
 async def updateTutor(request: UpdateRequest):
-    pass
+    session = sessions.find_one({"ID" : request.session})
+    if (request.auth == session["TID"]):
+        for i in range(len(session['Tutors'])):
+            if request.ID == session['Tutors'][i]['ID']:
+                session['Tutors'][i]['Active'] = True
+                session['Tutors'][i]['StartTime'] = datetime.now().isoformat()
+                session['Tutors'][i]['contact_link'] = request.contact_link
+                session['Tutors'][i]['EndTime'] = ''
+        # commit changes
+        sessions.find_one_and_replace({ 'ID': request.session}, session)
+    # return updated session
+    return getSessionFromId(request.session)

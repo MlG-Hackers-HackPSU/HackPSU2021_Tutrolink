@@ -3,14 +3,14 @@ import { Button, Modal, Form } from 'react-bootstrap'
 import client from '../client/client.js'
 
 function ModifyModal({ modalOpen, closeModal, 
-    setInQueue, setQueue, sessionId, auth, ID }) {
+    setInQueue, setQueue, sessionId, auth, ID, cookies }) {
 
 
         const[name, setName] =  useState(null)
         const[link, setLink] = useState(null)
 
     const ask = () => {
-        client.taUpdate(sessionId, auth,ID,link).then(queue => {
+        client.taUpdate(sessionId, auth,cookies.id,link).then(queue => {
             console.log(queue)
             setQueue(queue)
             setInQueue(true)
