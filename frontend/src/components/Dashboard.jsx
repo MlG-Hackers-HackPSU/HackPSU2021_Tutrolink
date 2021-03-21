@@ -16,10 +16,14 @@
 
 */
 import React from "react";
+import { useState,useEffect } from 'react'
+import client from '../client/client'
 // nodejs library that concatenates classes
 import classNames from "classnames";
 // react plugin used to create charts
 import { Line, Bar } from "react-chartjs-2";
+import { useLocation} from 'react-router-dom'
+import {DateTime} from 'luxon'
 
 // reactstrap components
 import {
@@ -50,17 +54,52 @@ import {
   chartExample4,
 } from "../variables/charts.jsx";
 
-function Dashboard(props) {
+function Dashboard() {
+
+  const DASHBOARD_REGEX = /\/dashboard\/(.+)\/?/
+
+  const location = useLocation()
+  const match = DASHBOARD_REGEX.exec(location.pathname)
+
   const [bigChartData, setbigChartData] = React.useState("data1");
+
+  const sessionId = match[1]
+  const[session, setSession] = useState(null)
+
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (isLoading) {
+      client.getRoom(sessionId).then(queue => {
+        setSession(queue)
+        setIsLoading(false)
+      })
+    }
+  }, [])
+
+  if (isLoading) {
+    return "Loading"
+  }
+  var data = []
+
+  
+  for (let i=0; i < session.Meetings.length;i++){
+    const start = DateTime.fromISO(session.Meetings[i].StartTime)
+    const end = DateTime.fromISO(session.Meetings[i].EndTime)
+    console.log(end.diff(start))
+    var overallTime = end.diff(start,'minutes').get('minutes') + " Minutes"
+    data.push({name: session.Meetings[i].Student.name, taName :session.Meetings[i].Tutor.Name, reason : session.Meetings[i].Student.question, duration:overallTime })
+  }
+
+  console.log(data)
+
+
+  
   const setBgChartData = (name) => {
     setbigChartData(name);
   };
   const renderTableData = () => {
-    const meeting_table = [
-      { name: 'Parker Griep', taName: 'Yang Lin', reason: 'HW 1', duration: 'minutes'}
-      ,{ name: 'Anthony Brigidi', taName: 'Joe Shmo', reason: 'HW 3', duration: 'minutes'}
-      ,{ name: 'Colin Arscott', taName: 'DaBaby', reason: 'Fortnite', duration: 'minutes'}
-    ]
+    const meeting_table = data
     return (meeting_table.map((meeting,idx) => (
       <tr key={`meeting${idx}`}>
         <td>{meeting.name}</td>
