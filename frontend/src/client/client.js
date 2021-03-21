@@ -26,8 +26,19 @@ class Client {
         })
     }
 
-    joinRoom(roomCode) {
-        // TODO
+    joinRoom(sessionId, studentId, question) {
+        return axios.post(`${this.uri}/student/join`, {
+            'session_id': sessionId,
+            'sid': studentId,
+            'question': question
+        }).then(response => response?.data)
+    }
+
+    leaveRoom(sessionId, studentId) {
+        return axios.post(`${this.uri}/student/leave`, {
+            'session_id': sessionId,
+            'student_id': studentId
+        }).then(response => response?.data)
     }
 
     getQueueStatus() {

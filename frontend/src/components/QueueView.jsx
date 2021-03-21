@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Container, Row, Col, Spinner } from 'react-bootstrap'
 import { DateTime, Duration } from 'luxon'
+import { useCookies } from 'react-cookie'
 import styles from './QueueView.module.css'
 import EstimatedTime from './EstimatedTime.jsx'
 import TitleCard from './TitleCard.jsx'
@@ -23,18 +24,17 @@ function QueueView({ student, session, id }) {
     const [activeMeeting, setActiveMeeting] = useState(null)
     const [lastUpdated, setLastUpdated] = useState(null)
     const [queue, setQueue] = useState(null)
-    const [me, SetMe] = useState(null)
+    const [me, setMe] = useState(null)
+    const [cookies, setCookie] = useCookies(['id', 'student'])
 
     const updateThreshold = Duration.fromObject({ seconds: 10 })
 
     const update = () => {
         client.getRoom(session).then(queue => {
             setQueue(queue)
-            setLastUpdated(DateTime.now())
             setIsLoading(false)
         })
     }
-
 
     useEffect(() => {
         const controller = new AbortController()
@@ -42,6 +42,10 @@ function QueueView({ student, session, id }) {
         return () => controller.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setIsLoading, setQueue, setLastUpdated, setActiveMeeting, session])
+
+    useEffect(() => {
+        setLastUpdated(DateTime.now())
+    }, [setLastUpdated, queue])
 
     if (isLoading) {
         return (
@@ -68,13 +72,20 @@ function QueueView({ student, session, id }) {
                     <Col lg={{span: 8}}>
                         <TitleCard 
                             title={queue.SessionName}
-                            taCount={3}
+                            taCount={queue.Tutors.length}
                             startTime={DateTime.fromISO(queue.Start)}
                             endTime={DateTime.fromISO(queue.End)}
                         />
                         <QueueControl
                             inQueue={inQueue}
                             openQuestionModal={openQuestionModal} 
+                            me={me}
+                            session={session}
+                            setQueue={setQueue}
+                            setMe={setMe}
+                            setInQueue={setInQueue}
+                            setLastUpdated={setLastUpdated}
+                            student={student}
                         />
                     </Col>
                 </Row>
@@ -88,7 +99,7 @@ function QueueView({ student, session, id }) {
                             taName={activeMeeting.taName}
                             taContactLink={activeMeeting.taContactLink}
                         /> }
-                        <StudentView queue={queue.Queue} me={me} />
+                        <StudentView queue={queue.Queue?.filter(student => student.active)} me={me} />
                     </Col>
                 </Row>
             </Container>
@@ -97,6 +108,11 @@ function QueueView({ student, session, id }) {
                 closeModal={closeQuestionModal}
                 questions={queue.Topics}
                 setInQueue={setInQueue}
+                setQueue={setQueue}
+                sessionId={session}
+                studentId={id}
+                setMe={setMe}
+                setCookie={setCookie}
             />
         </main>
     )

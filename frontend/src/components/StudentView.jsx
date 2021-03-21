@@ -11,7 +11,14 @@ function StudentView({ queue, me }) {
     }
 
     return queue.map((student, idx) => (
-            <StudentCard key={student.name} name={student.name} question={student.question} pos={idx+1} me={me} />))
+            <StudentCard 
+                key={student.student_id}
+                id={student.student_id}
+                name={student.name}
+                question={student.question}
+                pos={idx+1}
+                me={me} 
+            />))
 }
 
 export default StudentView
