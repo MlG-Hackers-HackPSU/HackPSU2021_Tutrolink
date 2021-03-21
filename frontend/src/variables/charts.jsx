@@ -297,8 +297,7 @@ let chart1_2_options = {
             borderDash: [],
             borderDashOffset: 0.0,
             // Data will be dynamic
-            //data: [53, 20, 10, 80, 100, 45],
-            data: test,
+            data: [53, 20, 10, 80, 100, 45],
           },
         ],
       };
