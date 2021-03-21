@@ -20,7 +20,7 @@ import Dashboard from "../components/Dashboard.jsx";
 
 var routes = [
   {
-    path: "/dashboard",
+    path: "/dashboard/{SessionID",
     name: "Dashboard",
     rtlName: "لوحة القيادة",
     icon: "tim-icons icon-chart-pie-36",
