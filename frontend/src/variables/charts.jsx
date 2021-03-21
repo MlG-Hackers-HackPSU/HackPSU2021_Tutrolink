@@ -16,16 +16,11 @@
 
 */
 
-<<<<<<< HEAD
-=======
-const { default: client } = require("../client/client");
->>>>>>> d9be2ef5b9c47c2af2225a1ef3a1e25da2da9ec0
 
 // ##############################
 // // // Chart variables
 // #############################
 
-<<<<<<< HEAD
 
 //console.log(session)
 
@@ -33,13 +28,6 @@ const { default: client } = require("../client/client");
 
 
 
-=======
-const test = [20,20,20,20,20,20]
-function tests(SessionID){
-  const session = client.getRoom(SessionID)
-  return session
-}
->>>>>>> d9be2ef5b9c47c2af2225a1ef3a1e25da2da9ec0
 
 // chartExample1 and chartExample2 options
 let chart1_2_options = {
