@@ -47,6 +47,11 @@ function QueueView({ student, session, id }) {
         setLastUpdated(DateTime.now())
     }, [setLastUpdated, queue])
 
+    useEffect(() => {
+        update()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoading])
+
     if (isLoading) {
         return (
             <main className={styles.content}>
