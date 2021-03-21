@@ -40,6 +40,7 @@ function QueueView({ student, session, id }) {
     const [rating, setRating] = useState(null)
     const [note, setNote] = useState(null)
     const [cookies, setCookie] = useCookies(['student_id', 'tutor_id'])
+    const [estimatedDuration, setEstimatedDuration] = useState(Duration.fromObject({ minutes: 0}))
 
     const updateThreshold = Duration.fromObject({ seconds: 10 })
 
@@ -88,6 +89,15 @@ function QueueView({ student, session, id }) {
                 setMe(tutors[tutors.length - 1])
             }
         }
+
+        if (queue){
+            if (student && me?.student_id) {
+                client.getETA(session, me.student_id).then(eta => setEstimatedDuration(Duration.fromObject({ seconds: eta.total_seconds })))
+            } else if (queue.Queue.length > 0) {
+            // request student last in the queue
+            client.getETA(session, queue.Queue[queue.Queue.length - 1].student_id).then(eta => setEstimatedDuration(Duration.fromObject({ seconds: eta.total_seconds })))
+            }
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setLastUpdated, queue, setInQueue])
 
@@ -95,9 +105,7 @@ function QueueView({ student, session, id }) {
         update()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLoading])
-
-    console.log({inQueue})
-
+    
     if (isLoading) {
         return (
             <main className={styles.content}>
@@ -114,7 +122,7 @@ function QueueView({ student, session, id }) {
                 <Row className={styles.headerrow}>
                     <Col lg={{span: 4}}>
                         <EstimatedTime
-                            estimatedDuration={Duration.fromObject({ minutes: 33 })}
+                            estimatedDuration={estimatedDuration}
                             lastUpdated={lastUpdated}
                             updateThreshold={updateThreshold}
                             update={update}

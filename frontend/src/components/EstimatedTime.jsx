@@ -22,7 +22,7 @@ function EstimatedTime({ estimatedDuration, lastUpdated, updateThreshold, update
         <main className={styles.content}>
             <h2 className={styles.eta}>
                 <span className={styles.time}>
-                    { estimatedDuration.get('minutes') }
+                    { Math.round(estimatedDuration.get('seconds') / 60) }
                 </span>
                 <span className={styles.minutes}> min ETA</span>
             </h2>
