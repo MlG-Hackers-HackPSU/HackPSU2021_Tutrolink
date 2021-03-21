@@ -81,3 +81,10 @@ class MeetingRequest(BaseModel):
     session_id: str
     tutor_id: str
     student_id: str
+
+class QueueETARequest(BaseModel):
+    session_id: str
+    student_id: str
+
+class QueueETAResponce(BaseModel):
+    total_seconds: int

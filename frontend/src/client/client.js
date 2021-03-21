@@ -81,6 +81,13 @@ class Client {
             'student_id': studentId
         }).then(response => response?.data)
     }
+
+    getETA(session_id, student_id){
+        return axios.get(`${this.uri}/ETA/${session_id}/${student_id}`, {
+            'session_id': session_id,
+            'student_id': student_id
+        }).then(response => response?.data)
+    }
 }
 
 export default (new Client())

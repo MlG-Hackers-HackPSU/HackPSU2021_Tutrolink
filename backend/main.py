@@ -188,6 +188,10 @@ async def checkMeetings(SessionID:str,StudentID:str):
         if(currentSession['Meetings'][i]['Student']["student_id"] == StudentID):
             return currentSession['Meetings'][i]
     return False
+
+@app.get("/ETA/{session_id}/{student_id}")
+async def getETA(session_id: str, student_id: str):
+    return calculateQueueTime(session_id, student_id)
   
 
 ######################## HELPER FUNCTIONS ########################
@@ -246,4 +250,36 @@ def generateTutorLink(sid, tid):
 def generateStudentLink(sid, stid):
     return f"{frontend_host}/{sid}/{stid}/student/join"
 
+def calculateQueueTime(session_id, student_id):
+    my_session = dict(getSessionFromId(session_id))
+    total_wait_time = 0
+    num = 0
+    num_ahead = 0
+
+    for tutor in my_session['Tutors']:
+        if tutor.Active:
+            break
+    else:
+        return QueueETAResponce(total_seconds=60*60*24*2+1)
+
+    for meeting in my_session['Meetings']:
+        num += 1
+        if not meeting['Active']:
+            total_wait_time += (datetime(meeting['EndTime']) - datetime(meeting['StartTime'])).total_seconds()
+        else:
+            total_wait_time += (datetime.now() - datetime(meeting['StartTime'])).total_seconds()
+            num_ahead += 1
+        
+
+    avg_wait_time_p_question = total_wait_time / num if num > 0 else total_wait_time
+
+    if avg_wait_time_p_question == 0:
+        avg_wait_time_p_question = 60
+
+    for person in my_session['Queue']:
+        if person.student_id == student_id:
+            return QueueETAResponce(total_seconds=int(num_ahead * avg_wait_time_p_question))
+        num_ahead += 1
+
+    return QueueETAResponce(total_seconds=int(num_ahead * avg_wait_time_p_question))
 
