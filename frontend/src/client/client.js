@@ -70,6 +70,10 @@ class Client {
         }).then(response => response?.data)
     }
 
+    checkMeeting(){
+        return axios.get(`${this.uri}/check`).then(response => response?.data)
+    }
+
     getQueueStatus() {
         // TODO
     }

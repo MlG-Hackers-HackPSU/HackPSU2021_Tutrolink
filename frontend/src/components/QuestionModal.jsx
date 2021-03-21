@@ -15,6 +15,8 @@ function QuestionModal({ modalOpen, closeModal, questions,
             const me = queue.Queue[queue.Queue.length - 1]
             setMe(me) 
             setCookie('id', me.student_id)
+            console.log("Heres the cookie:")
+            console.log(me.student_id)
         })
         closeModal()
     }
