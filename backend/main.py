@@ -162,7 +162,7 @@ async def deactivateTutor(request: TutorLeaveRequest):
     for i in range(len(session['Tutors'])):
         if request.tutor_id == session['Tutors'][i]['ID']:
             session['Tutors'][i]['Active'] = False
-            session['Tutors'][i]['left_queue_time'] = left_timestamp
+            session['Tutors'][i]['EndTime'] = left_timestamp
     for i in range(len(session['Meetings'])):
         if request.tutor_id == session['Meetings'][i]['Tutor']['ID']:
             session['Meetings'][i]['Active'] = False
