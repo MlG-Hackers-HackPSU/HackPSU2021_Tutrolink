@@ -9,6 +9,10 @@ from pydantic import BaseModel
 from typing import (Optional,List)
 from random import choice
 from names import generateName
+from fastapi.middleware.cors import CORSMiddleware
+
+frontend_host = os.environ["FRONTEND_URI"]
+origins = [ frontend_host ]
 
 app = FastAPI()
 client = MongoClient(
@@ -16,9 +20,15 @@ client = MongoClient(
     username=os.environ["MONGO_USERNAME"], 
     password=os.environ["MONGO_PASSWORD"])
 
-frontend_host = os.environ["FRONTEND_URI"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-#Here are the objects that will be sent back and forth
+# Here are the objects that will be sent back and forth
 
 class Review(BaseModel):
     Rating: int
@@ -52,8 +62,8 @@ class Session(BaseModel):
     End: str
     SID: str
     TID: str
-    tutor_link: Optional[str]
-    student_link: Optional[str]
+    tutor_link: str
+    student_link: str
 
 class TutorRequest(BaseModel):
     name: str
@@ -80,19 +90,18 @@ async def createSession(sessionRequest : SessionRequest):
     id = newID(16)
     sid = newID(5)
     tid = newID(5)
-    newSession = Session(ID = id,Topics = sessionRequest.questions,SessionName = sessionRequest.room_title, Start = sessionRequest.start, End = sessionRequest.end,SID = sid, TID = tid)
+    newSession = Session(
+        ID = id, Topics = sessionRequest.questions, SessionName = sessionRequest.room_title,
+        Start = sessionRequest.start, End = sessionRequest.end, 
+        SID = sid, TID = tid,
+        tutor_link = generateTutorLink(id, tid), student_link = generateStudentLink(id, sid),
+    )
     sessions.insert_one(dict(newSession))
     return newSession
 
 @app.get("/sessions/{SessionID}")
 async def getSession(SessionID : str):
-    currentSession = sessions.find_one({"ID":SessionID})
-    studentLink = generateStudentLink(SessionID)
-    tutorLink = generateTutorLink(SessionID)
-    currentSession['student_link'] = studentLink
-    currentSession['tutor_link'] = tutorLink
-    send_back = Session.parse_obj(currentSession)
-    return send_back
+    return Session.parse_obj(sessions.find_one({"ID":SessionID}))
 
 # incoming student, give them session information such as
 # queue information, questions stuff like that.
@@ -145,15 +154,12 @@ def sessionExists(session_id):
     return False
 
 #creates a link to invite a tutor 
-def generateTutorLink(SessionID : str):
-    tid = Session.parse_obj(sessions.find_one({"ID":SessionID})).TID
-    return f"{frontend_host}/{SessionID}/{tid}/tutor/join"
+def generateTutorLink(sid, tid):
+    return f"{frontend_host}/{sid}/{tid}/tutor/join"
     
 #creates a link to invite a tutor 
-def generateStudentLink(SessionID):
-    sid = Session.parse_obj(sessions.find_one({"ID":SessionID}))
-    sid = sid.SID
-    return f"{frontend_host}/{SessionID}/{sid}/student/join"
+def generateStudentLink(sid, stid):
+    return f"{frontend_host}/{sid}/{stid}/student/join"
 
 
 @app.get("/getCurrentMeetings/{SessionID}")

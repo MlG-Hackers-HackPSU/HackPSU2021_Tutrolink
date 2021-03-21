@@ -2,16 +2,22 @@ import { useState } from 'react'
 import { Container, Jumbotron, Row, Col, Form, Button } from 'react-bootstrap'
 import styles from './QueueCreate.module.css'
 import sample from '../images/sample.png'
+import client from '../client/client.js'
 
 function QueueCreate() {
 
     const [roomTitle, setRoomTitle] = useState(null)
-    const [topics, setTopics] = useState([null, null])
+    const [topics, setTopics] = useState([''])
     const [removeFlag, setRemoveFlag] = useState(false)
     const [queue, setQueue] = useState(null)
 
     const makeRoom = () => {
-        console.log('make room')
+        if (!queue) {
+            client.makeRoom(roomTitle, topics)
+                .then(queue => {
+                    setQueue(queue)
+                })
+        }
     }
 
     const removeTopic = () => {
@@ -23,7 +29,7 @@ function QueueCreate() {
     }
 
     const addTopic = () => {
-        setTopics([...topics, null])
+        setTopics([...topics, ''])
         setRemoveFlag(false)
     }
 
@@ -53,7 +59,7 @@ function QueueCreate() {
                             <section className={styles.links}>
                                 <h4>Successfully generated Queue:</h4>
                                 <a href={queue.student_link} target="_blank" rel="noreferrer">Access as Attendee</a>
-                                <a href={queue.ta_link} target="_blank" rel="noreferrer">Access as Answerer</a>
+                                <a href={queue.tutor_link} target="_blank" rel="noreferrer">Access as Answerer</a>
                             </section>
                         </Col>
                     </Row>
