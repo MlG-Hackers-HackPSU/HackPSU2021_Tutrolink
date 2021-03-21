@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Container, Jumbotron, Row, Col, Form, Button } from 'react-bootstrap'
 import styles from './QueueCreate.module.css'
 import sample from '../images/sample.png'
+import logo from '../images/Tutrolink.png'
 import client from '../client/client.js'
 
 function QueueCreate() {
@@ -44,6 +45,7 @@ function QueueCreate() {
                     <Row className={styles.titlerow}>
                         <Col lg={{ span: 5 }}>
                             <section className={styles.title}>
+                                <img src={logo} alt='Tutrolink Logo' className={styles.tutro}/>
                                 <h1>TutroLink</h1>
                                 <span>Ad-hoc Office Hours</span>
                             </section>
