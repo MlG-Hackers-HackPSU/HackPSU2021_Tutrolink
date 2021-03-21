@@ -1,0 +1,25 @@
+  [31morigin/HEAD[m -> origin/main
+  [31morigin/bugfix/fix-frontend-dockerfile[m
+  [31morigin/bugfix/mongo-express-portal-not-connecting[m
+  [31morigin/bugfix/mongo-persistent-storage[m
+  [31morigin/dev[m
+  [31morigin/feature/Update-file-structure[m
+  [31morigin/feature/add-mongodb-with-portal[m
+  [31morigin/feature/create-meeting[m
+  [31morigin/feature/create-space[m
+  [31morigin/feature/deployment[m
+  [31morigin/feature/favicon-logo[m
+  [31morigin/feature/get-session-info[m
+  [31morigin/feature/implement-meeting-frontend[m
+  [31morigin/feature/insert-TA[m
+  [31morigin/feature/mongodb-link[m
+  [31morigin/feature/more-names[m
+  [31morigin/feature/queue-implementation[m
+  [31morigin/feature/queue-view[m
+  [31morigin/feature/some-other-feature[m
+  [31morigin/feature/student-join[m
+  [31morigin/feature/update-be-message[m
+  [31morigin/feature/wire-together-room-creation[m
+  [31morigin/issue/fix-add-tutor-behavior[m
+  [31morigin/main[m
+  [31morigin/my_branch[m
